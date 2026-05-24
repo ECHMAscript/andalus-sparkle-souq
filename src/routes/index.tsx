@@ -1,26 +1,43 @@
 import { createFileRoute } from "@tanstack/react-router";
+import Navbar from "@/components/Navbar";
+import Hero from "@/components/Hero";
+import Categories from "@/components/Categories";
+import Products from "@/components/Products";
+import Heritage from "@/components/Heritage";
+import Newsletter from "@/components/Newsletter";
+import Footer from "@/components/Footer";
 
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: "Souq Al Andalus — Fine Arabic Jewelry, Hand-Forged in 21k Gold" },
+      {
+        name: "description",
+        content:
+          "Souq Al Andalus crafts heirloom Arabic jewelry in 21k gold — rings, necklaces, earrings and bridal sets shaped by twelve generations of artisans.",
+      },
+      { property: "og:title", content: "Souq Al Andalus — Fine Arabic Jewelry" },
+      {
+        property: "og:description",
+        content: "Heirloom Arabic gold jewelry, hand-forged in the spirit of Al Andalus.",
+      },
+    ],
+  }),
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
+function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen">
+      <Navbar />
+      <main>
+        <Hero />
+        <Categories />
+        <Products />
+        <Heritage />
+        <Newsletter />
+      </main>
+      <Footer />
     </div>
   );
-}
-
-function Index() {
-  return <PlaceholderIndex />;
 }
