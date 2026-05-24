@@ -1,36 +1,41 @@
 const cats = [
-  { name: "Rings", count: "48 pieces", icon: "◈" },
-  { name: "Necklaces", count: "62 pieces", icon: "❋" },
-  { name: "Earrings", count: "35 pieces", icon: "✦" },
-  { name: "Bracelets", count: "29 pieces", icon: "❉" },
-  { name: "Bridal Sets", count: "18 sets", icon: "✺" },
+  { name: "Rings", count: 48, icon: "◈" },
+  { name: "Necklaces", count: 62, icon: "❋" },
+  { name: "Earrings", count: 35, icon: "✦" },
+  { name: "Bracelets", count: 29, icon: "❉" },
+  { name: "Bridal", count: 18, icon: "✺" },
+  { name: "Anklets", count: 12, icon: "◇" },
 ];
 
 export default function Categories() {
   return (
-    <section className="mx-auto max-w-7xl px-6 py-16">
-      <div className="flex items-end justify-between mb-10">
+    <section className="mx-auto max-w-7xl px-6 py-10">
+      <div className="flex items-end justify-between mb-6">
         <div>
-          <div className="text-xs uppercase tracking-[0.3em] text-primary mb-3">
-            Browse by Craft
+          <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
+            Shop by Category
           </div>
-          <h2 className="font-display text-4xl md:text-5xl">Categories</h2>
+          <h2 className="font-display text-3xl md:text-4xl">Browse the Souq</h2>
         </div>
-        <div className="gold-divider flex-1 mx-8 hidden md:block" />
+        <a className="text-xs uppercase tracking-widest text-muted-foreground hover:text-primary cursor-pointer hidden md:block">
+          View all →
+        </a>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
         {cats.map((c) => (
           <button
             key={c.name}
-            className="neo-pressable p-6 text-left aspect-square flex flex-col justify-between"
+            className="neo-pressable p-5 flex flex-col items-center text-center gap-3"
           >
             <div className="neo-inset size-14 grid place-items-center rounded-full">
               <span className="text-2xl text-gold-gradient">{c.icon}</span>
             </div>
             <div>
-              <div className="font-display text-xl">{c.name}</div>
-              <div className="text-xs text-muted-foreground mt-1">{c.count}</div>
+              <div className="font-medium text-sm">{c.name}</div>
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
+                {c.count} items
+              </div>
             </div>
           </button>
         ))}
