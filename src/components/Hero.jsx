@@ -1,78 +1,78 @@
 import heroImage from "@/assets/hero-jewelry.jpg";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Truck, ShieldCheck, RefreshCw, Award } from "lucide-react";
 
 export default function Hero() {
   return (
-    <section className="relative mx-auto max-w-7xl px-6 pt-12 pb-24">
-      <div className="grid lg:grid-cols-2 gap-10 items-center">
-        <div className="space-y-8">
-          <div className="neo-sm inline-flex items-center gap-2 px-4 py-2 text-xs uppercase tracking-[0.2em] text-primary">
-            <Sparkles className="size-3.5" />
-            Heritage Collection · 2026
-          </div>
-
-          <h1 className="font-display text-5xl md:text-7xl leading-[0.95]">
-            Treasures of
-            <br />
-            <span className="text-gold-gradient italic">Al Andalus</span>
-          </h1>
-
-          <p className="text-base md:text-lg text-muted-foreground max-w-md leading-relaxed">
-            Hand-forged in 21k gold, each piece carries the geometry of Granada,
-            the patience of Damascene craft, and the warmth of a thousand years
-            of Arabic artistry.
-          </p>
-
-          <div className="flex flex-wrap gap-4">
-            <button className="neo-pressable px-7 py-4 flex items-center gap-3 group">
-              <span className="text-sm font-medium tracking-wide text-primary">
-                Shop the Collection
-              </span>
-              <ArrowRight className="size-4 text-primary group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button className="px-7 py-4 text-sm tracking-wide text-foreground/80 hover:text-primary transition-colors">
-              Our Heritage →
-            </button>
-          </div>
-
-          <div className="flex gap-8 pt-6">
-            {[
-              { k: "21k", v: "Pure Gold" },
-              { k: "1200+", v: "Artisans" },
-              { k: "40yr", v: "Tradition" },
-            ].map((s) => (
-              <div key={s.k}>
-                <div className="font-display text-3xl text-gold-gradient">{s.k}</div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground mt-1">
-                  {s.v}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative">
-          <div className="neo p-4 rounded-3xl">
-            <img
-              src={heroImage}
-              alt="Hand-crafted Arabic gold necklace and earrings set"
-              width={1600}
-              height={1200}
-              className="w-full rounded-2xl object-cover aspect-[4/5]"
-            />
-          </div>
-          <div className="neo absolute -bottom-8 -left-8 p-5 max-w-[220px] hidden md:block">
-            <div className="text-xs uppercase tracking-widest text-muted-foreground">
-              Featured
+    <section className="mx-auto max-w-7xl px-6 pt-10 pb-12">
+      <div className="grid lg:grid-cols-5 gap-8 items-stretch">
+        {/* Hero image card */}
+        <div className="lg:col-span-3 neo p-3 relative overflow-hidden rounded-3xl">
+          <img
+            src={heroImage}
+            alt="Hand-crafted Arabic gold necklace and earrings set"
+            width={1600}
+            height={1200}
+            className="w-full h-full rounded-2xl object-cover aspect-[16/10] lg:aspect-auto"
+          />
+          <div className="absolute bottom-8 left-8 right-8 md:right-auto md:max-w-sm bg-background/85 backdrop-blur-md neo-sm p-6 rounded-2xl">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
+              Heritage Collection
             </div>
-            <div className="font-display text-lg mt-1">Alhambra Necklace</div>
-            <div className="text-primary font-medium mt-2">€ 2,480</div>
-          </div>
-          <div className="neo-sm absolute -top-6 -right-6 p-4 hidden md:flex items-center gap-3">
-            <div className="size-2 rounded-full bg-accent animate-pulse" />
-            <span className="text-xs uppercase tracking-widest">In Atelier</span>
+            <h1 className="font-display text-3xl md:text-4xl leading-tight mb-3">
+              Treasures of <span className="italic text-gold-gradient">Al Andalus</span>
+            </h1>
+            <p className="text-sm text-muted-foreground mb-4">
+              21k hand-forged gold. From € 480.
+            </p>
+            <button className="btn-gold px-5 py-2.5 text-xs uppercase tracking-widest font-semibold inline-flex items-center gap-2">
+              Shop Collection <ArrowRight className="size-3.5" />
+            </button>
           </div>
         </div>
+
+        {/* Side promo tiles */}
+        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+          <div className="neo-pressable p-5 col-span-2 flex items-center justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.25em] text-primary">Limited</div>
+              <div className="font-display text-2xl mt-1">Bridal Sets</div>
+              <div className="text-xs text-muted-foreground mt-1">From € 4,200</div>
+            </div>
+            <button className="neo-sm px-4 py-2 text-[10px] uppercase tracking-widest">
+              Shop →
+            </button>
+          </div>
+          <div className="neo-pressable p-5">
+            <div className="text-[10px] uppercase tracking-[0.25em] text-foreground/60">New</div>
+            <div className="font-display text-lg mt-1">Cordoba Rings</div>
+            <div className="text-xs text-primary mt-2 font-medium">€ 1,240+</div>
+          </div>
+          <div className="neo-pressable p-5">
+            <div className="text-[10px] uppercase tracking-[0.25em] text-destructive">-20%</div>
+            <div className="font-display text-lg mt-1">Earrings</div>
+            <div className="text-xs text-primary mt-2 font-medium">From € 380</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Trust strip */}
+      <div className="neo mt-8 px-6 py-5 grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { Icon: Truck, t: "Free Shipping", s: "Orders over € 500" },
+          { Icon: ShieldCheck, t: "Certified 21k", s: "Hallmarked & assayed" },
+          { Icon: RefreshCw, t: "30-Day Returns", s: "No questions asked" },
+          { Icon: Award, t: "Lifetime Care", s: "Free polishing" },
+        ].map(({ Icon, t, s }) => (
+          <div key={t} className="flex items-center gap-3">
+            <div className="neo-sm size-10 grid place-items-center shrink-0">
+              <Icon className="size-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs font-semibold">{t}</div>
+              <div className="text-[11px] text-muted-foreground truncate">{s}</div>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );
