@@ -14,14 +14,22 @@ export default function Hero() {
             height={1200}
             className="w-full h-full rounded-2xl object-cover aspect-[16/10] lg:aspect-auto"
           />
-          <div className="absolute bottom-8 left-8 right-8 md:right-auto md:max-w-sm bg-background/85 backdrop-blur-md neo-sm p-6 rounded-2xl">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
+          <div
+            className="absolute bottom-8 left-8 right-8 md:right-auto md:max-w-sm backdrop-blur-md p-6 rounded-2xl"
+            style={{
+              background:
+                "linear-gradient(155deg, color-mix(in oklab, var(--emerald-deep) 92%, black) 0%, color-mix(in oklab, var(--emerald) 88%, black) 100%)",
+              boxShadow:
+                "0 20px 50px -20px color-mix(in oklab, var(--emerald-deep) 80%, transparent), inset 0 0 0 1px color-mix(in oklab, var(--gold) 22%, transparent)",
+            }}
+          >
+            <div className="text-[10px] uppercase tracking-[0.3em] text-gold-gradient mb-2">
               Heritage Collection
             </div>
-            <h1 className="font-display text-3xl md:text-4xl leading-tight mb-3">
+            <h1 className="font-display text-3xl md:text-4xl leading-tight mb-3 text-[oklch(0.97_0.02_95)]">
               Treasures of <span className="italic text-gold-gradient">Al Andalus</span>
             </h1>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-[oklch(0.88_0.02_95)]/80 mb-4">
               21k hand-forged gold. From € 480.
             </p>
             <button className="btn-gold px-5 py-2.5 text-xs uppercase tracking-widest font-semibold inline-flex items-center gap-2">
