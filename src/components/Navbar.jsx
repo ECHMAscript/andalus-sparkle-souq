@@ -30,7 +30,12 @@ export default function Navbar() {
               <span className="font-display text-2xl text-gold-gradient leading-none">س</span>
             </div>
             <div className="hidden sm:block leading-tight">
-              <div className="font-display text-lg text-gold-gradient">Souq Al Andalus</div>
+              <div
+                className="font-display text-lg font-semibold"
+                style={{ color: "oklch(0.55 0.14 75)" }}
+              >
+                Souq Al Andalus
+              </div>
               <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
                 Fine Arabic Jewelry
               </div>
