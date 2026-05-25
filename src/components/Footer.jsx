@@ -9,7 +9,10 @@ export default function Footer() {
       <div className="gold-divider mb-12" />
       <div className="grid md:grid-cols-4 gap-10 mb-12">
         <div>
-          <div className="font-display text-2xl text-gold-gradient mb-3">
+          <div
+            className="font-display text-2xl font-semibold mb-3"
+            style={{ color: "oklch(0.55 0.14 75)" }}
+          >
             Souq Al Andalus
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">

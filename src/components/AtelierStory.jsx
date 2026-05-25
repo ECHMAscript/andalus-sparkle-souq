@@ -13,7 +13,10 @@ export default function AtelierStory() {
             alt="Artisan hand-forging Arabic gold jewelry in the atelier"
             className="w-full h-full object-cover rounded-[1.5rem] aspect-[4/5] transition-transform duration-[1200ms] group-hover:scale-105"
           />
-          <div className="absolute left-6 top-6 neo-sm px-4 py-2 text-[10px] uppercase tracking-[0.25em] text-primary bg-background/90">
+          <div
+            className="absolute left-6 top-6 px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] text-primary rounded-full bg-background/85 backdrop-blur-sm"
+            style={{ boxShadow: "0 1px 4px color-mix(in oklab, black 10%, transparent)" }}
+          >
             Chapter I
           </div>
         </div>
