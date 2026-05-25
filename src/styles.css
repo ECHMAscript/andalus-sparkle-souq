@@ -40,6 +40,9 @@
   --color-gold: var(--gold);
   --color-gold-deep: var(--gold-deep);
   --color-saffron: var(--saffron);
+  --color-emerald: var(--emerald);
+  --color-emerald-deep: var(--emerald-deep);
+  --color-emerald-soft: var(--emerald-soft);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
