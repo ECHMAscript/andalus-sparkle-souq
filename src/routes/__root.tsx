@@ -76,6 +76,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Hand-forged Arabic gold jewelry in the spirit of Al Andalus." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "Souq Al Andalus — Fine Arabic Jewelry" },
+      { name: "twitter:title", content: "Souq Al Andalus — Fine Arabic Jewelry" },
+      { property: "og:description", content: "Hand-forged Arabic gold jewelry in the spirit of Al Andalus." },
+      { name: "twitter:description", content: "Hand-forged Arabic gold jewelry in the spirit of Al Andalus." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/85499109-06b8-4ecf-bf66-a3ba549ec57d/id-preview-808d966a--7976cc87-85c6-4abb-8a59-907cea5546e4.lovable.app-1779668546659.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/85499109-06b8-4ecf-bf66-a3ba549ec57d/id-preview-808d966a--7976cc87-85c6-4abb-8a59-907cea5546e4.lovable.app-1779668546659.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
