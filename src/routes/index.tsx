@@ -3,7 +3,9 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
 import Products from "@/components/Products";
+import AtelierStory from "@/components/AtelierStory";
 import Heritage from "@/components/Heritage";
+import Testimonials from "@/components/Testimonials";
 import Newsletter from "@/components/Newsletter";
 import Footer from "@/components/Footer";
 
@@ -34,7 +36,9 @@ function Index() {
         <Hero />
         <Categories />
         <Products />
+        <AtelierStory />
         <Heritage />
+        <Testimonials />
         <Newsletter />
       </main>
       <Footer />
