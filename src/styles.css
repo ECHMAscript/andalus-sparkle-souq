@@ -127,6 +127,10 @@
     letter-spacing: -0.015em;
     color: oklch(0.2 0.01 80);
   }
+
+  button, a[role="button"], [type="button"], [type="submit"] {
+    cursor: pointer;
+  }
 }
 
 @layer components {
@@ -149,7 +153,8 @@
     background: var(--color-surface);
     box-shadow: var(--shadow-neo-sm);
     border-radius: var(--radius);
-    transition: box-shadow 220ms ease, transform 220ms ease;
+    cursor: pointer;
+    transition: box-shadow 260ms ease, transform 260ms ease;
   }
   .neo-pressable:hover {
     box-shadow: var(--shadow-neo);
@@ -160,18 +165,75 @@
     transform: translateY(0);
   }
 
+  /* Gold-tinted neomorphic button — use on dark/green surfaces.
+     Shadow color matches the button itself for a glowing emboss. */
   .btn-gold {
     background: var(--gradient-gold);
     color: #1f1a10;
-    box-shadow: var(--shadow-gold), 4px 4px 10px var(--neo-shadow-dark),
-      -4px -4px 10px var(--neo-shadow-light);
     border-radius: 999px;
-    transition: transform 200ms ease, box-shadow 200ms ease;
+    cursor: pointer;
+    box-shadow:
+      6px 6px 18px color-mix(in oklab, var(--gold-deep) 70%, transparent),
+      -4px -4px 14px color-mix(in oklab, var(--gold) 35%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--gold-deep) 35%, transparent) inset;
+    transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
   }
-  .btn-gold:hover { transform: translateY(-2px); }
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.04);
+    box-shadow:
+      10px 10px 26px color-mix(in oklab, var(--gold-deep) 75%, transparent),
+      -6px -6px 18px color-mix(in oklab, var(--gold) 45%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--gold-deep) 35%, transparent) inset;
+  }
   .btn-gold:active {
     transform: translateY(0);
-    box-shadow: var(--shadow-neo-inset);
+    box-shadow:
+      inset 4px 4px 10px color-mix(in oklab, var(--gold-deep) 75%, transparent),
+      inset -4px -4px 10px color-mix(in oklab, var(--gold) 50%, transparent);
+  }
+
+  /* Emerald neomorphic button — shadow matches body color */
+  .btn-emerald {
+    background: linear-gradient(135deg, var(--emerald-soft), var(--emerald-deep));
+    color: oklch(0.96 0.02 95);
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow:
+      6px 6px 18px color-mix(in oklab, var(--emerald-deep) 75%, transparent),
+      -4px -4px 14px color-mix(in oklab, var(--emerald-soft) 45%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--emerald-deep) 50%, transparent) inset;
+    transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+  }
+  .btn-emerald:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+  }
+  .btn-emerald:active {
+    transform: translateY(0);
+    box-shadow:
+      inset 4px 4px 10px color-mix(in oklab, var(--emerald-deep) 80%, transparent),
+      inset -4px -4px 10px color-mix(in oklab, var(--emerald-soft) 55%, transparent);
+  }
+
+  /* Neomorphic surface used over the deep-green jumbotron. Shadow is green,
+     not gray, so the inset/outset reads against the darker panel. */
+  .neo-on-emerald {
+    background: color-mix(in oklab, var(--emerald-deep) 88%, black);
+    border-radius: var(--radius);
+    cursor: pointer;
+    box-shadow:
+      6px 6px 18px color-mix(in oklab, black 60%, transparent),
+      -4px -4px 14px color-mix(in oklab, var(--emerald-soft) 45%, transparent);
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+  .neo-on-emerald:hover { transform: translateY(-2px); }
+  .neo-on-emerald-inset {
+    background: color-mix(in oklab, var(--emerald-deep) 92%, black);
+    border-radius: var(--radius);
+    box-shadow:
+      inset 5px 5px 14px color-mix(in oklab, black 65%, transparent),
+      inset -5px -5px 14px color-mix(in oklab, var(--emerald-soft) 35%, transparent);
   }
 
   .text-gold-gradient {
@@ -190,4 +252,18 @@
       transparent
     );
   }
+
+  /* Generic micro-interactions */
+  .btn-lift {
+    cursor: pointer;
+    transition: transform 220ms ease, box-shadow 220ms ease, color 200ms ease;
+  }
+  .btn-lift:hover { transform: translateY(-2px); }
+  .btn-lift:active { transform: translateY(0); }
 }
+
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float-soft { animation: float-soft 5s ease-in-out infinite; }
