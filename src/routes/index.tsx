@@ -8,6 +8,7 @@ import Heritage from "@/components/Heritage";
 import Testimonials from "@/components/Testimonials";
 import Newsletter from "@/components/Newsletter";
 import Footer from "@/components/Footer";
+import PageShell from "@/components/PageShell";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="min-h-screen">
+    <PageShell>
       <Navbar />
       <main>
         <Hero />
@@ -42,6 +43,6 @@ function Index() {
         <Newsletter />
       </main>
       <Footer />
-    </div>
+    </PageShell>
   );
 }
