@@ -38,17 +38,18 @@ export const Route = createFileRoute("/product/$id")({
   ),
 });
 
-// Hover-lens zoom: a small overlay box follows the cursor inside the image
-// and renders the same image enlarged via background-position. On touch
-// devices we just hide the lens.
+// Real magnifying-glass: the lens itself shows an enlarged crop of the
+// image, positioned to follow the cursor — exactly like a physical loupe.
 function ZoomImage({ src, alt }) {
   const wrapRef = useRef(null);
   const [pos, setPos] = useState({ x: 50, y: 50 });
+  const [size, setSize] = useState({ w: 0, h: 0 });
   const [visible, setVisible] = useState(false);
 
   const onMove = (e) => {
     const r = wrapRef.current?.getBoundingClientRect();
     if (!r) return;
+    setSize({ w: r.width, h: r.height });
     const x = ((e.clientX - r.left) / r.width) * 100;
     const y = ((e.clientY - r.top) / r.height) * 100;
     setPos({
@@ -57,45 +58,39 @@ function ZoomImage({ src, alt }) {
     });
   };
 
-  const LENS = 140; // px
+  const LENS = 180; // px
+  const ZOOM = 2.5;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4">
-      <div
-        ref={wrapRef}
-        onMouseEnter={() => setVisible(true)}
-        onMouseLeave={() => setVisible(false)}
-        onMouseMove={onMove}
-        className="relative neo-inset rounded-2xl overflow-hidden aspect-square flex-1 cursor-zoom-in"
-      >
-        <img src={src} alt={alt} className="w-full h-full object-cover select-none" draggable={false} />
-        {visible && (
-          <>
-            {/* Lens highlight */}
-            <div
-              aria-hidden
-              className="hidden md:block absolute pointer-events-none border-2 border-primary/80 rounded-full bg-primary/10 backdrop-blur-[1px]"
-              style={{
-                width: LENS,
-                height: LENS,
-                left: `calc(${pos.x}% - ${LENS / 2}px)`,
-                top: `calc(${pos.y}% - ${LENS / 2}px)`,
-              }}
-            />
-            {/* Floating zoomed pane (desktop only) */}
-            <div
-              aria-hidden
-              className="hidden lg:block absolute top-0 left-full ml-6 size-[420px] xl:size-[500px] rounded-2xl neo overflow-hidden pointer-events-none z-30"
-              style={{
-                backgroundImage: `url(${src})`,
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "250%",
-                backgroundPosition: `${pos.x}% ${pos.y}%`,
-              }}
-            />
-          </>
-        )}
-      </div>
+    <div
+      ref={wrapRef}
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      onMouseMove={onMove}
+      className="relative neo-inset rounded-2xl overflow-hidden aspect-square cursor-zoom-in"
+    >
+      <img
+        src={src}
+        alt={alt}
+        className="w-full h-full object-cover select-none"
+        draggable={false}
+      />
+      {visible && size.w > 0 && (
+        <div
+          aria-hidden
+          className="hidden md:block absolute pointer-events-none rounded-full ring-2 ring-primary/80 shadow-2xl"
+          style={{
+            width: LENS,
+            height: LENS,
+            left: `calc(${pos.x}% - ${LENS / 2}px)`,
+            top: `calc(${pos.y}% - ${LENS / 2}px)`,
+            backgroundImage: `url(${src})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: `${size.w * ZOOM}px ${size.h * ZOOM}px`,
+            backgroundPosition: `${pos.x}% ${pos.y}%`,
+          }}
+        />
+      )}
     </div>
   );
 }
