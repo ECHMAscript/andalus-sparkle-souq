@@ -38,17 +38,18 @@ export const Route = createFileRoute("/product/$id")({
   ),
 });
 
-// Hover-lens zoom: a small overlay box follows the cursor inside the image
-// and renders the same image enlarged via background-position. On touch
-// devices we just hide the lens.
+// Real magnifying-glass: the lens itself shows an enlarged crop of the
+// image, positioned to follow the cursor — exactly like a physical loupe.
 function ZoomImage({ src, alt }) {
   const wrapRef = useRef(null);
   const [pos, setPos] = useState({ x: 50, y: 50 });
+  const [size, setSize] = useState({ w: 0, h: 0 });
   const [visible, setVisible] = useState(false);
 
   const onMove = (e) => {
     const r = wrapRef.current?.getBoundingClientRect();
     if (!r) return;
+    setSize({ w: r.width, h: r.height });
     const x = ((e.clientX - r.left) / r.width) * 100;
     const y = ((e.clientY - r.top) / r.height) * 100;
     setPos({
@@ -57,45 +58,39 @@ function ZoomImage({ src, alt }) {
     });
   };
 
-  const LENS = 140; // px
+  const LENS = 180; // px
+  const ZOOM = 2.5;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4">
-      <div
-        ref={wrapRef}
-        onMouseEnter={() => setVisible(true)}
-        onMouseLeave={() => setVisible(false)}
-        onMouseMove={onMove}
-        className="relative neo-inset rounded-2xl overflow-hidden aspect-square flex-1 cursor-zoom-in"
-      >
-        <img src={src} alt={alt} className="w-full h-full object-cover select-none" draggable={false} />
-        {visible && (
-          <>
-            {/* Lens highlight */}
-            <div
-              aria-hidden
-              className="hidden md:block absolute pointer-events-none border-2 border-primary/80 rounded-full bg-primary/10 backdrop-blur-[1px]"
-              style={{
-                width: LENS,
-                height: LENS,
-                left: `calc(${pos.x}% - ${LENS / 2}px)`,
-                top: `calc(${pos.y}% - ${LENS / 2}px)`,
-              }}
-            />
-            {/* Floating zoomed pane (desktop only) */}
-            <div
-              aria-hidden
-              className="hidden lg:block absolute top-0 left-full ml-6 size-[420px] xl:size-[500px] rounded-2xl neo overflow-hidden pointer-events-none z-30"
-              style={{
-                backgroundImage: `url(${src})`,
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "250%",
-                backgroundPosition: `${pos.x}% ${pos.y}%`,
-              }}
-            />
-          </>
-        )}
-      </div>
+    <div
+      ref={wrapRef}
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      onMouseMove={onMove}
+      className="relative neo-inset rounded-2xl overflow-hidden aspect-square cursor-zoom-in"
+    >
+      <img
+        src={src}
+        alt={alt}
+        className="w-full h-full object-cover select-none"
+        draggable={false}
+      />
+      {visible && size.w > 0 && (
+        <div
+          aria-hidden
+          className="hidden md:block absolute pointer-events-none rounded-full ring-2 ring-primary/80 shadow-2xl"
+          style={{
+            width: LENS,
+            height: LENS,
+            left: `calc(${pos.x}% - ${LENS / 2}px)`,
+            top: `calc(${pos.y}% - ${LENS / 2}px)`,
+            backgroundImage: `url(${src})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: `${size.w * ZOOM}px ${size.h * ZOOM}px`,
+            backgroundPosition: `${pos.x}% ${pos.y}%`,
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -242,18 +237,22 @@ function ProductPage() {
                 </button>
                 <span className="w-8 text-center text-sm font-semibold">{qty}</span>
                 <button
-                  onClick={() => setQty((q) => Math.min(p.stock, q + 1))}
+                  onClick={() => setQty((q) => (p.stock === 0 ? q + 1 : Math.min(p.stock, q + 1)))}
                   className="p-3 hover:text-primary"
                   aria-label="Increase quantity"
                 >
                   <Plus className="size-3.5" />
                 </button>
               </div>
-              {p.stock <= 10 && (
+              {p.stock === 0 ? (
+                <span className="text-xs text-[oklch(0.45_0.12_160)] font-semibold uppercase tracking-widest">
+                  {p.tag === "New" ? "Pre-order · ships next season" : "Out of stock · pre-order"}
+                </span>
+              ) : p.stock <= 10 ? (
                 <span className="text-xs text-[oklch(0.55_0.14_75)] font-semibold uppercase tracking-widest">
                   Only {p.stock} left
                 </span>
-              )}
+              ) : null}
             </div>
 
             {/* Actions */}
@@ -261,15 +260,30 @@ function ProductPage() {
               <button
                 onClick={handleAdd}
                 disabled={!canAdd}
-                className="btn-gold flex-1 py-4 text-xs uppercase tracking-widest font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`flex-1 py-4 text-xs uppercase tracking-widest font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${
+                  p.stock === 0
+                    ? "neo-pressable text-[oklch(0.35_0.12_160)]"
+                    : "btn-gold"
+                }`}
+                style={
+                  p.stock === 0
+                    ? { boxShadow: "0 10px 24px -10px color-mix(in oklab, oklch(0.55 0.14 160) 60%, transparent)" }
+                    : undefined
+                }
               >
                 <SouqBag className="size-4" />
-                {added ? "Added to Bag ✓" : "Add to Bag"}
+                {p.stock === 0
+                  ? added
+                    ? "Pre-order Placed ✓"
+                    : "Place an Order"
+                  : added
+                  ? "Added to Bag ✓"
+                  : "Add to Bag"}
               </button>
               <button
                 onClick={() => toggleFavorite(p.id)}
                 aria-label={favored ? "Remove from favorites" : "Add to favorites"}
-                className={`neo-pressable px-5 py-4 inline-flex items-center justify-center ${
+                className={`neo-pressable px-5 py-4 inline-flex items-center justify-center cursor-pointer ${
                   favored ? "text-destructive" : ""
                 }`}
               >

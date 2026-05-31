@@ -6,12 +6,18 @@ import { useFavorites, toggleFavorite } from "@/lib/store";
 
 function ImageTag({ tag, stock }) {
   const badges = [];
-  if (tag && tag.startsWith("-")) {
+  const isNew = tag === "New";
+  const outOfStock = stock === 0;
+  if (outOfStock && isNew) {
+    badges.push({ key: "coming", label: "Coming Soon", cls: "bg-[oklch(0.45_0.12_160)] text-white" });
+  } else if (outOfStock) {
+    badges.push({ key: "sold", label: "Sold Out", cls: "bg-foreground/85 text-background" });
+  } else if (tag && tag.startsWith("-")) {
     badges.push({ key: "discount", label: tag + " OFF", cls: "bg-destructive text-white" });
-  } else if (tag === "New") {
+  } else if (isNew) {
     badges.push({ key: "new", label: "NEW", cls: "bg-foreground text-background" });
   }
-  if (typeof stock === "number" && stock <= 10) {
+  if (!outOfStock && typeof stock === "number" && stock <= 10) {
     badges.push({ key: "stock", label: `Only ${stock} left`, cls: "bg-[oklch(0.55_0.14_75)] text-white" });
   }
   if (!badges.length) return null;
