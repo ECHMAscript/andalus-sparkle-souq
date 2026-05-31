@@ -237,18 +237,22 @@ function ProductPage() {
                 </button>
                 <span className="w-8 text-center text-sm font-semibold">{qty}</span>
                 <button
-                  onClick={() => setQty((q) => Math.min(p.stock, q + 1))}
+                  onClick={() => setQty((q) => (p.stock === 0 ? q + 1 : Math.min(p.stock, q + 1)))}
                   className="p-3 hover:text-primary"
                   aria-label="Increase quantity"
                 >
                   <Plus className="size-3.5" />
                 </button>
               </div>
-              {p.stock <= 10 && (
+              {p.stock === 0 ? (
+                <span className="text-xs text-[oklch(0.45_0.12_160)] font-semibold uppercase tracking-widest">
+                  {p.tag === "New" ? "Pre-order · ships next season" : "Out of stock · pre-order"}
+                </span>
+              ) : p.stock <= 10 ? (
                 <span className="text-xs text-[oklch(0.55_0.14_75)] font-semibold uppercase tracking-widest">
                   Only {p.stock} left
                 </span>
-              )}
+              ) : null}
             </div>
 
             {/* Actions */}
@@ -256,15 +260,30 @@ function ProductPage() {
               <button
                 onClick={handleAdd}
                 disabled={!canAdd}
-                className="btn-gold flex-1 py-4 text-xs uppercase tracking-widest font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`flex-1 py-4 text-xs uppercase tracking-widest font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${
+                  p.stock === 0
+                    ? "neo-pressable text-[oklch(0.35_0.12_160)]"
+                    : "btn-gold"
+                }`}
+                style={
+                  p.stock === 0
+                    ? { boxShadow: "0 10px 24px -10px color-mix(in oklab, oklch(0.55 0.14 160) 60%, transparent)" }
+                    : undefined
+                }
               >
                 <SouqBag className="size-4" />
-                {added ? "Added to Bag ✓" : "Add to Bag"}
+                {p.stock === 0
+                  ? added
+                    ? "Pre-order Placed ✓"
+                    : "Place an Order"
+                  : added
+                  ? "Added to Bag ✓"
+                  : "Add to Bag"}
               </button>
               <button
                 onClick={() => toggleFavorite(p.id)}
                 aria-label={favored ? "Remove from favorites" : "Add to favorites"}
-                className={`neo-pressable px-5 py-4 inline-flex items-center justify-center ${
+                className={`neo-pressable px-5 py-4 inline-flex items-center justify-center cursor-pointer ${
                   favored ? "text-destructive" : ""
                 }`}
               >
