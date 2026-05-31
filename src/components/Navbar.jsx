@@ -138,9 +138,9 @@ export default function Navbar() {
           <SearchBox className="hidden md:flex flex-1 max-w-md mx-2 lg:mx-4" />
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <button className="neo-sm p-2.5 hidden sm:grid place-items-center" aria-label="Account">
+            <Link to="/account/settings" className="neo-sm p-2.5 hidden sm:grid place-items-center" aria-label="Account settings">
               <User className="size-4" />
-            </button>
+            </Link>
             <Link
               to="/favorites"
               className="neo-sm p-2.5 grid place-items-center relative"
