@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SaleRouteImport } from './routes/sale'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as BagRouteImport } from './routes/bag'
 import { Route as IndexRouteImport } from './routes/index'
@@ -16,6 +17,11 @@ import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategoryCategoryRouteImport } from './routes/category.$category'
 import { Route as AccountSettingsRouteImport } from './routes/account.settings'
 
+const SaleRoute = SaleRouteImport.update({
+  id: '/sale',
+  path: '/sale',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bag': typeof BagRoute
   '/favorites': typeof FavoritesRoute
+  '/sale': typeof SaleRoute
   '/account/settings': typeof AccountSettingsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bag': typeof BagRoute
   '/favorites': typeof FavoritesRoute
+  '/sale': typeof SaleRoute
   '/account/settings': typeof AccountSettingsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/bag': typeof BagRoute
   '/favorites': typeof FavoritesRoute
+  '/sale': typeof SaleRoute
   '/account/settings': typeof AccountSettingsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bag'
     | '/favorites'
+    | '/sale'
     | '/account/settings'
     | '/category/$category'
     | '/product/$id'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bag'
     | '/favorites'
+    | '/sale'
     | '/account/settings'
     | '/category/$category'
     | '/product/$id'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bag'
     | '/favorites'
+    | '/sale'
     | '/account/settings'
     | '/category/$category'
     | '/product/$id'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BagRoute: typeof BagRoute
   FavoritesRoute: typeof FavoritesRoute
+  SaleRoute: typeof SaleRoute
   AccountSettingsRoute: typeof AccountSettingsRoute
   CategoryCategoryRoute: typeof CategoryCategoryRoute
   ProductIdRoute: typeof ProductIdRoute
@@ -110,6 +123,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sale': {
+      id: '/sale'
+      path: '/sale'
+      fullPath: '/sale'
+      preLoaderRoute: typeof SaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BagRoute: BagRoute,
   FavoritesRoute: FavoritesRoute,
+  SaleRoute: SaleRoute,
   AccountSettingsRoute: AccountSettingsRoute,
   CategoryCategoryRoute: CategoryCategoryRoute,
   ProductIdRoute: ProductIdRoute,
@@ -166,13 +187,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
