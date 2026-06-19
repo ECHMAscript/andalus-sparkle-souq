@@ -1,13 +1,12 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Tag, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Tag, Sparkles, Heart, Star } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
-import { ProductCard } from "@/components/Products";
 import { products, categoryTiles } from "@/lib/products";
-import { useFavorites } from "@/lib/store";
+import { useFavorites, toggleFavorite } from "@/lib/store";
 
 export const Route = createFileRoute("/sale")({
   component: SalePage,
@@ -44,14 +43,113 @@ function getSaleCollections() {
       ...c,
       items: sale.filter((p) => p.category === c.name),
     }))
-    .filter((c) => c.items.length > 0);
+    .filter((c) => c.items.length > 0);\n}
+
+/* ---------------- Sale Card (top image / bottom white) ---------------- */
+
+function SaleImageTag({ tag, stock }) {
+  const badges = [];
+  const isNew = tag === "New";
+  const outOfStock = stock === 0;
+  if (outOfStock && isNew) {
+    badges.push({ key: "coming", label: "Coming Soon", cls: "bg-[oklch(0.45_0.12_160)] text-white" });
+  } else if (outOfStock) {
+    badges.push({ key: "sold", label: "Sold Out", cls: "bg-foreground/85 text-background" });
+  } else if (tag && tag.startsWith("-")) {
+    badges.push({ key: "discount", label: tag + " OFF", cls: "bg-destructive text-white" });
+  } else if (isNew) {
+    badges.push({ key: "new", label: "NEW", cls: "bg-foreground text-background" });
+  }
+  if (!outOfStock && typeof stock === "number" && stock <= 10) {
+    badges.push({ key: "stock", label: `${stock} left`, cls: "bg-[oklch(0.55_0.14_75)] text-white" });
+  }
+  if (!badges.length) return null;
+  return (
+    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1 items-start">
+      {badges.map((b) => (
+        <span key={b.key} className={`px-2.5 py-1 text-[10px] uppercase tracking-[0.12em] font-bold rounded-full shadow-sm ${b.cls}`}>
+          {b.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function SaleCard({ p, favorited }) {
+  const handleFav = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    toggleFavorite(p.id);
+  };
+  return (
+    <Link
+      to="/product/$id"
+      params={{ id: p.id }}
+      className="group flex flex-col rounded-2xl overflow-hidden bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.15)]"
+      style={{
+        boxShadow: "0 8px 24px -8px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04)",
+      }}
+    >
+      {/* Top half — image */}
+      <div className="relative overflow-hidden aspect-[4/3]">
+        <img
+          src={p.img}
+          alt={p.name}
+          loading="lazy"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+        />
+        <SaleImageTag tag={p.tag} stock={p.stock} />
+        <button
+          onClick={handleFav}
+          aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+          aria-pressed={favorited}
+          className={`absolute top-2.5 right-2.5 p-1.5 grid place-items-center rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 ${
+            favorited ? "bg-destructive hover:bg-destructive/90" : "bg-white/85 hover:bg-white"
+          }`}
+          style={{
+            boxShadow: favorited
+              ? "0 3px 10px color-mix(in oklab, var(--destructive) 45%, transparent)"
+              : "0 1px 4px rgba(0,0,0,0.12)",
+          }}
+        >
+          <Heart className={`size-3.5 transition-colors ${favorited ? "text-white fill-white" : "text-foreground"}`} />
+        </button>
+      </div>
+
+      {/* Bottom half — white info panel */}
+      <div className="flex flex-col gap-2 p-4 flex-1 bg-card">
+        <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+          {p.category}
+        </div>
+        <h3 className="text-sm font-medium leading-tight line-clamp-2 min-h-[2.5em]">
+          {p.name}
+        </h3>
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <Star className="size-3 fill-primary text-primary" />
+          <span>{p.rating}</span>
+          <span>·</span>
+          <span>{p.reviews} reviews</span>
+        </div>
+        <div className="flex items-baseline gap-2 mt-auto pt-1">
+          <span className="text-base font-semibold text-foreground">€ {p.price.toLocaleString()}</span>
+          {p.was && (
+            <>
+              <span className="text-xs text-muted-foreground line-through">€ {p.was.toLocaleString()}</span>
+              <span className="ml-auto text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full bg-destructive text-white">
+                {p.tag} OFF
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
 }
 
 /* ---------------- Jumbotron (image 1) ---------------- */
 
 function Jumbotron({ heroItems }) {
   const [a, b, c] = heroItems;
-  // Link the CTA to the most-represented category among the hero items.
   const cta = heroItems[0]?.category?.toLowerCase() ?? "rings";
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 sm:pt-10">
@@ -194,13 +292,13 @@ function DeckCarousel({ items }) {
   const VISIBLE = Math.min(5, deck.length);
 
   return (
-    <section className="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
+    <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-6">
         <div>
           <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2 flex items-center gap-2">
             <Tag className="size-3" /> Just Reduced
           </div>
-          <h2 className="font-display text-3xl md:text-4xl">
+          <h2 className="font-display text-2xl md:text-3xl">
             New on <span className="italic text-gold-gradient">sale</span>
           </h2>
         </div>
@@ -208,32 +306,32 @@ function DeckCarousel({ items }) {
           <button
             onClick={prev}
             aria-label="Previous"
-            className="neo-pressable size-11 grid place-items-center rounded-full"
+            className="neo-pressable size-10 grid place-items-center rounded-full"
           >
             <ChevronLeft className="size-4" />
           </button>
           <button
             onClick={next}
             aria-label="Next"
-            className="neo-pressable size-11 grid place-items-center rounded-full"
+            className="neo-pressable size-10 grid place-items-center rounded-full"
           >
             <ChevronRight className="size-4" />
           </button>
         </div>
       </div>
 
-      {/* Deck stage */}
+      {/* Deck stage — smaller than before */}
       <div
         className="relative mx-auto"
-        style={{ perspective: "1400px", height: "min(78vw, 460px)", maxWidth: "440px" }}
+        style={{ perspective: "1200px", height: "min(54vw, 300px)", maxWidth: "320px" }}
       >
         {order.slice(0, VISIBLE).map((idx, pos) => {
           const item = deck[idx];
           const isTop = pos === 0;
           const fly = isTop && animating;
-          const baseY = pos * 10;
+          const baseY = pos * 8;
           const baseScale = 1 - pos * 0.05;
-          const baseRot = pos * -1.5;
+          const baseRot = pos * -1.2;
           let transform = `translate(-50%, calc(-50% + ${baseY}px)) scale(${baseScale}) rotate(${baseRot}deg)`;
           let opacity = 1 - pos * 0.08;
           if (fly === "next") {
@@ -248,7 +346,7 @@ function DeckCarousel({ items }) {
               key={item.id}
               to="/product/$id"
               params={{ id: item.id }}
-              className="absolute top-1/2 left-1/2 w-[78%] sm:w-[70%] aspect-[3/4] rounded-3xl overflow-hidden bg-card"
+              className="absolute top-1/2 left-1/2 w-[72%] sm:w-[64%] aspect-[3/4] rounded-2xl overflow-hidden bg-card"
               style={{
                 transform,
                 opacity,
@@ -256,7 +354,7 @@ function DeckCarousel({ items }) {
                 transition:
                   "transform 520ms cubic-bezier(0.65,0,0.35,1), opacity 520ms ease",
                 boxShadow:
-                  "0 30px 60px -20px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.05)",
+                  "0 20px 48px -16px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.05)",
                 pointerEvents: isTop ? "auto" : "none",
               }}
             >
@@ -266,20 +364,20 @@ function DeckCarousel({ items }) {
                 className="w-full h-full object-cover"
               />
               <div
-                className="absolute inset-x-0 bottom-0 p-5 text-white"
+                className="absolute inset-x-0 bottom-0 p-4 text-white"
                 style={{
                   background:
-                    "linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 100%)",
+                    "linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%)",
                 }}
               >
-                <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.95_0.16_105)] mb-1">
+                <div className="text-[10px] uppercase tracking-[0.25em] text-[oklch(0.95_0.16_105)] mb-0.5">
                   {item.category}
                 </div>
-                <div className="font-display text-xl sm:text-2xl mb-1 leading-tight">
+                <div className="font-display text-lg sm:text-xl mb-0.5 leading-tight">
                   {item.name}
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-lg font-semibold">
+                  <span className="text-base font-semibold">
                     € {item.price.toLocaleString()}
                   </span>
                   {item.was && (
@@ -288,7 +386,7 @@ function DeckCarousel({ items }) {
                     </span>
                   )}
                   {item.tag && item.tag.startsWith("-") && (
-                    <span className="ml-auto text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full bg-destructive">
+                    <span className="ml-auto text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full bg-destructive">
                       {item.tag} OFF
                     </span>
                   )}
@@ -300,7 +398,7 @@ function DeckCarousel({ items }) {
       </div>
 
       {/* Dots */}
-      <div className="flex items-center justify-center gap-1.5 mt-6">
+      <div className="flex items-center justify-center gap-1.5 mt-5">
         {deck.map((_, i) => (
           <span
             key={i}
@@ -353,7 +451,6 @@ function SalePage() {
   const collections = useMemo(() => getSaleCollections(), []);
   const favs = useFavorites();
 
-  // Pad hero/carousel from full catalogue when we have fewer than 3 sale items.
   const heroItems =
     sale.length >= 3
       ? sale.slice(0, 3)
@@ -393,9 +490,9 @@ function SalePage() {
               No pieces on sale at the moment. Check back soon.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
               {sale.map((p) => (
-                <ProductCard key={p.id} p={p} favorited={favs.includes(p.id)} />
+                <SaleCard key={p.id} p={p} favorited={favs.includes(p.id)} />
               ))}
             </div>
           )}
