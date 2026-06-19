@@ -44,6 +44,7 @@ function getSaleCollections() {
       items: sale.filter((p) => p.category === c.name),
     }))
     .filter((c) => c.items.length > 0);
+}
 
 /* ---------------- Sale Card (top image / bottom white) ---------------- */
 
