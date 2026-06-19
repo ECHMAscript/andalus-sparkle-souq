@@ -14,7 +14,7 @@ import SouqBag from "@/components/SouqBag";
 const links = [
   { label: "New Arrivals", to: "/" },
   ...categoryTiles.map((c) => ({ label: c.name, to: "/category/$category", params: { category: c.name.toLowerCase() } })),
-  { label: "Sale", to: "/" },
+  { label: "Sale", to: "/sale" },
 ];
 
 function SearchBox({ className = "" }) {
