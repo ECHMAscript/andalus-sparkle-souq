@@ -371,7 +371,7 @@ function DeckCarousel({ items }) {
               key={item.id}
               to="/product/$id"
               params={{ id: item.id }}
-              className="absolute top-1/2 left-1/2 w-[72%] sm:w-[64%] aspect-[3/4] rounded-2xl overflow-hidden bg-card"
+              className="absolute top-1/2 left-1/2 w-[72%] sm:w-[68%] lg:w-[64%] aspect-[3/4] rounded-2xl overflow-hidden bg-card"
               style={{
                 transform,
                 opacity,
