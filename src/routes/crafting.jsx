@@ -167,7 +167,7 @@ function Connector({ from, to }) {
 function StepRow({ step, side, index }) {
   const [ref, shown] = useInViewOnce();
   const isLeft = side === "left";
-  const offClass = isLeft ? "-translate-x-[40%]" : "translate-x-[40%]";
+  
   return (
     <div
       ref={ref}
