@@ -344,11 +344,12 @@ function DeckCarousel({ items }) {
         </div>
       </div>
 
-      {/* Deck stage — smaller than before */}
+      {/* Deck stage */}
       <div
-        className="relative mx-auto"
-        style={{ perspective: "1200px", height: "min(54vw, 300px)", maxWidth: "320px" }}
+        className="relative mx-auto w-full max-w-[320px] sm:max-w-[400px] lg:max-w-[480px] h-[min(70vw,320px)] sm:h-[400px] lg:h-[480px]"
+        style={{ perspective: "1200px" }}
       >
+
         {order.slice(0, VISIBLE).map((idx, pos) => {
           const item = deck[idx];
           const isTop = pos === 0;
