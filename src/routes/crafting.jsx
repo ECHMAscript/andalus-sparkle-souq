@@ -179,39 +179,37 @@ function StepRow({ step, side, index }) {
       <div
         className="md:[direction:ltr] will-change-transform"
         style={{
-          transform: shown ? "translateX(0)" : undefined,
+          transform: shown
+            ? "translateX(0)"
+            : isLeft
+              ? "translateX(-40%)"
+              : "translateX(40%)",
           opacity: shown ? 1 : 0,
           transition:
             "transform 1000ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 700ms ease-out",
         }}
       >
         <div
-          className={`${shown ? "" : offClass} transition-none`}
+          className="relative rounded-3xl overflow-hidden bg-card"
           style={{
-            transform: shown ? "translateX(0)" : undefined,
+            boxShadow:
+              "0 30px 60px -20px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)",
           }}
         >
-          <div
-            className="relative rounded-3xl overflow-hidden bg-card"
-            style={{
-              boxShadow:
-                "0 30px 60px -20px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)",
-            }}
-          >
-            <img
-              src={step.img}
-              alt={step.title}
-              loading="lazy"
-              width={1024}
-              height={768}
-              className="w-full aspect-[4/3] object-cover"
-            />
-            <span className="absolute top-3 left-3 text-[10px] uppercase tracking-[0.25em] font-bold px-3 py-1.5 rounded-full bg-foreground/85 text-background backdrop-blur-sm">
-              Step {String(index + 1).padStart(2, "0")}
-            </span>
-          </div>
+          <img
+            src={step.img}
+            alt={step.title}
+            loading="lazy"
+            width={1024}
+            height={768}
+            className="w-full aspect-[4/3] object-cover"
+          />
+          <span className="absolute top-3 left-3 text-[10px] uppercase tracking-[0.25em] font-bold px-3 py-1.5 rounded-full bg-foreground/85 text-background backdrop-blur-sm">
+            Step {String(index + 1).padStart(2, "0")}
+          </span>
         </div>
       </div>
+
 
       {/* Text */}
       <div
