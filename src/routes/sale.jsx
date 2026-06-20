@@ -182,42 +182,65 @@ function Jumbotron({ heroItems }) {
         </svg>
 
         <div className="relative grid lg:grid-cols-2 gap-10 lg:gap-8 items-center">
-          {/* Stacked tilted cards */}
-          <div className="relative h-[320px] sm:h-[380px] mx-auto w-full max-w-md">
+          {/* Stacked tilted cards — image top, white info panel bottom */}
+          <div className="relative h-[360px] sm:h-[440px] mx-auto w-full max-w-md">
             {[
-              { p: b, rot: -14, tx: "-38%", ty: "-4%", z: 10, scale: 0.85, tint: "oklch(0.95 0.16 105)" },
-              { p: c, rot: 12, tx: "8%", ty: "-10%", z: 20, scale: 0.88, tint: "oklch(0.7 0.18 175)" },
-              { p: a, rot: -3, tx: "-10%", ty: "6%", z: 30, scale: 1, tint: "oklch(0.6 0.21 27)" },
+              { p: b, rot: -10, tx: "-42%", ty: "-2%", z: 10, scale: 0.82 },
+              { p: c, rot: 10, tx: "16%", ty: "-6%", z: 20, scale: 0.86 },
+              { p: a, rot: -2, tx: "-8%", ty: "8%", z: 30, scale: 1 },
             ].map((card, i) =>
               card.p ? (
                 <Link
                   key={card.p.id + i}
                   to="/product/$id"
                   params={{ id: card.p.id }}
-                  className="absolute top-1/2 left-1/2 block w-[55%] aspect-[3/4] rounded-2xl overflow-hidden transition-transform duration-500 hover:scale-[1.03]"
+                  className="absolute top-1/2 left-1/2 flex flex-col w-[58%] rounded-2xl overflow-hidden bg-card transition-transform duration-500 hover:scale-[1.03]"
                   style={{
                     transform: `translate(calc(-50% + ${card.tx}), calc(-50% + ${card.ty})) rotate(${card.rot}deg) scale(${card.scale})`,
                     zIndex: card.z,
                     boxShadow:
-                      "0 24px 50px -10px rgba(0,0,0,0.45), 0 0 0 4px rgba(255,255,255,0.08)",
-                    background: card.tint,
+                      "0 24px 50px -10px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.1)",
                   }}
                 >
-                  <img
-                    src={card.p.img}
-                    alt={card.p.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover mix-blend-multiply"
-                  />
-                  <span className="absolute top-2 left-2 text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-full bg-destructive text-white">
-                    {card.p.tag && card.p.tag.startsWith("-")
-                      ? card.p.tag + " OFF"
-                      : "Sale"}
-                  </span>
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src={card.p.img}
+                      alt={card.p.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute top-2 left-2 text-[9px] uppercase tracking-widest font-bold px-2 py-1 rounded-full bg-destructive text-white">
+                      {card.p.tag && card.p.tag.startsWith("-")
+                        ? card.p.tag + " OFF"
+                        : "Sale"}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1.5 p-3 bg-card">
+                    <div className="text-[9px] uppercase tracking-[0.22em] text-muted-foreground">
+                      {card.p.category}
+                    </div>
+                    <div className="text-xs font-medium leading-tight line-clamp-1 text-foreground">
+                      {card.p.name}
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-sm font-semibold text-foreground">
+                        € {card.p.price.toLocaleString()}
+                      </span>
+                      {card.p.was && (
+                        <span className="text-[10px] text-muted-foreground line-through">
+                          € {card.p.was.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="mt-1 text-center text-[9px] uppercase tracking-widest font-bold px-2 py-1.5 rounded-full bg-foreground text-background">
+                      Check it out
+                    </span>
+                  </div>
                 </Link>
               ) : null,
             )}
           </div>
+
 
           {/* Message panel */}
           <div className="rounded-2xl border border-white/15 p-6 sm:p-8 bg-white/[0.04] backdrop-blur-sm">
