@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 export default function Footer() {
   const cols = [
     { title: "Shop", items: ["All Jewelry", "Rings", "Necklaces", "Earrings", "Bridal"] },
@@ -25,13 +27,22 @@ export default function Footer() {
               {c.title}
             </div>
             <ul className="space-y-2.5">
-              {c.items.map((i) => (
-                <li key={i}>
-                  <a className="text-sm text-foreground/70 hover:text-primary transition-colors cursor-pointer">
-                    {i}
-                  </a>
-                </li>
-              ))}
+              {c.items.map((i) => {
+                const href = i === "Contact" ? "/contact" : i === "Craftsmanship" ? "/crafting" : null;
+                return (
+                  <li key={i}>
+                    {href ? (
+                      <Link to={href} className="text-sm text-foreground/70 hover:text-primary transition-colors">
+                        {i}
+                      </Link>
+                    ) : (
+                      <a className="text-sm text-foreground/70 hover:text-primary transition-colors cursor-pointer">
+                        {i}
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

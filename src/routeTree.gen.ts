@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SaleRouteImport } from './routes/sale'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CraftingRouteImport } from './routes/crafting'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as BagRouteImport } from './routes/bag'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
@@ -31,6 +32,11 @@ const FavoritesRoute = FavoritesRouteImport.update({
 const CraftingRoute = CraftingRouteImport.update({
   id: '/crafting',
   path: '/crafting',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BagRoute = BagRouteImport.update({
@@ -62,6 +68,7 @@ const AccountSettingsRoute = AccountSettingsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bag': typeof BagRoute
+  '/contact': typeof ContactRoute
   '/crafting': typeof CraftingRoute
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bag': typeof BagRoute
+  '/contact': typeof ContactRoute
   '/crafting': typeof CraftingRoute
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/bag': typeof BagRoute
+  '/contact': typeof ContactRoute
   '/crafting': typeof CraftingRoute
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/bag'
+    | '/contact'
     | '/crafting'
     | '/favorites'
     | '/sale'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/bag'
+    | '/contact'
     | '/crafting'
     | '/favorites'
     | '/sale'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/bag'
+    | '/contact'
     | '/crafting'
     | '/favorites'
     | '/sale'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BagRoute: typeof BagRoute
+  ContactRoute: typeof ContactRoute
   CraftingRoute: typeof CraftingRoute
   FavoritesRoute: typeof FavoritesRoute
   SaleRoute: typeof SaleRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/crafting'
       fullPath: '/crafting'
       preLoaderRoute: typeof CraftingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/bag': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BagRoute: BagRoute,
+  ContactRoute: ContactRoute,
   CraftingRoute: CraftingRoute,
   FavoritesRoute: FavoritesRoute,
   SaleRoute: SaleRoute,
