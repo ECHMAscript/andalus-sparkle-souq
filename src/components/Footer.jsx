@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 export default function Footer() {
   const cols = [
     { title: "Shop", items: ["All Jewelry", "Rings", "Necklaces", "Earrings", "Bridal"] },
