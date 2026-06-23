@@ -117,6 +117,29 @@ export default function Navbar() {
         <span className="sm:hidden">Free shipping over € 500</span>
       </div>
 
+      <div className="bg-background border-b border-border/40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-2 flex items-center justify-between gap-3">
+          <span className="text-[10px] sm:text-[11px] tracking-[0.15em] uppercase text-muted-foreground truncate">
+            Complimentary shipping worldwide on orders over € 500
+          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/auth"
+              className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full neo-sm hover:bg-muted/60 transition-colors"
+            >
+              Log In
+            </Link>
+            <Link
+              to="/auth"
+              className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full neo-pressable text-white transition-all"
+              style={{ background: "linear-gradient(135deg, oklch(0.55 0.14 75), oklch(0.45 0.12 65))" }}
+            >
+              Register
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-md border-b border-border/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3 sm:gap-6">
           <button
