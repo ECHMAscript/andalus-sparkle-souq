@@ -1,0 +1,264 @@
+// @ts-nocheck
+import { useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import PageShell from "@/components/PageShell";
+import { Loader2, User, Lock, Mail, MapPin, Phone, Sparkles } from "lucide-react";
+
+export const Route = createFileRoute("/auth")({
+  component: AuthPage,
+  head: () => ({
+    meta: [
+      { title: "Sign In or Register — Souq Al Andalus" },
+      { name: "description", content: "Create your account or sign in to manage orders, favorites, and shipping details." },
+    ],
+  }),
+});
+
+const signupSchema = z.object({
+  email: z.string().trim().email("Enter a valid email").max(255),
+  password: z.string().min(8, "Password must be at least 8 characters").max(72),
+  username: z.string().trim().min(3, "Username must be at least 3 characters").max(40),
+  full_name: z.string().trim().min(2, "Enter your full name").max(120),
+  phone: z.string().trim().max(40).optional().or(z.literal("")),
+  address_line1: z.string().trim().min(2, "Street address is required").max(200),
+  address_line2: z.string().trim().max(200).optional().or(z.literal("")),
+  city: z.string().trim().min(1, "City is required").max(100),
+  state: z.string().trim().max(100).optional().or(z.literal("")),
+  postal_code: z.string().trim().min(1, "Postal code is required").max(40),
+  country: z.string().trim().min(2, "Country is required").max(100),
+});
+
+const loginSchema = z.object({
+  email: z.string().trim().email("Enter a valid email").max(255),
+  password: z.string().min(1, "Enter your password").max(72),
+});
+
+function Field({ icon: Icon, label, error, children }) {
+  return (
+    <label className="block">
+      <span className="block text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5">{label}</span>
+      <div className={`neo-inset flex items-center gap-2 px-4 py-2.5 rounded-xl ${error ? "ring-1 ring-destructive/50" : ""}`}>
+        {Icon ? <Icon className="size-4 text-muted-foreground shrink-0" /> : null}
+        {children}
+      </div>
+      {error && <span className="block text-xs text-destructive mt-1">{error}</span>}
+    </label>
+  );
+}
+
+function AuthPage() {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState("login"); // 'login' | 'signup'
+  const [submitting, setSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const [login, setLogin] = useState({ email: "", password: "" });
+  const [signup, setSignup] = useState({
+    email: "", password: "", username: "", full_name: "", phone: "",
+    address_line1: "", address_line2: "", city: "", state: "", postal_code: "", country: "",
+  });
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setErrors({});
+    const parsed = loginSchema.safeParse(login);
+    if (!parsed.success) {
+      const fe = {};
+      parsed.error.issues.forEach((i) => (fe[i.path[0]] = i.message));
+      setErrors(fe);
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.auth.signInWithPassword(parsed.data);
+    setSubmitting(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Welcome back");
+    navigate({ to: "/account/settings" });
+  }
+
+  async function handleSignup(e) {
+    e.preventDefault();
+    setErrors({});
+    const parsed = signupSchema.safeParse(signup);
+    if (!parsed.success) {
+      const fe = {};
+      parsed.error.issues.forEach((i) => (fe[i.path[0]] = i.message));
+      setErrors(fe);
+      return;
+    }
+    setSubmitting(true);
+    const { email, password, ...meta } = parsed.data;
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: meta,
+      },
+    });
+    setSubmitting(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Account created — welcome to the souq");
+    navigate({ to: "/account/settings" });
+  }
+
+  const inputCls = "bg-transparent flex-1 text-sm outline-none placeholder:text-muted-foreground min-w-0";
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1">
+        <PageShell>
+          <div className="max-w-2xl mx-auto py-10 sm:py-16">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.3em] text-muted-foreground mb-3">
+                <Sparkles className="size-3" /> Souq Al Andalus
+              </div>
+              <h1 className="font-display text-4xl sm:text-5xl text-gold-gradient mb-2">
+                {mode === "login" ? "Ahlan wa Sahlan" : "Join the Souq"}
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {mode === "login"
+                  ? "Sign in to view your collection, favorites, and orders."
+                  : "Create an account so we can craft and ship your jewelry."}
+              </p>
+            </div>
+
+            <div className="neo rounded-3xl p-1 mb-6 grid grid-cols-2 gap-1 max-w-sm mx-auto">
+              <button
+                onClick={() => { setMode("login"); setErrors({}); }}
+                className={`py-2.5 rounded-2xl text-sm font-medium transition-all ${mode === "login" ? "neo-pressable text-foreground" : "text-muted-foreground"}`}
+              >Sign In</button>
+              <button
+                onClick={() => { setMode("signup"); setErrors({}); }}
+                className={`py-2.5 rounded-2xl text-sm font-medium transition-all ${mode === "signup" ? "neo-pressable text-foreground" : "text-muted-foreground"}`}
+              >Register</button>
+            </div>
+
+            <div className="neo rounded-3xl p-6 sm:p-8 bg-card">
+              {mode === "login" ? (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <Field icon={Mail} label="Email" error={errors.email}>
+                    <input type="email" autoComplete="email" className={inputCls}
+                      value={login.email}
+                      onChange={(e) => setLogin({ ...login, email: e.target.value })}
+                      placeholder="you@example.com" />
+                  </Field>
+                  <Field icon={Lock} label="Password" error={errors.password}>
+                    <input type="password" autoComplete="current-password" className={inputCls}
+                      value={login.password}
+                      onChange={(e) => setLogin({ ...login, password: e.target.value })}
+                      placeholder="••••••••" />
+                  </Field>
+                  <button type="submit" disabled={submitting}
+                    className="neo-pressable w-full py-3 rounded-2xl font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-60"
+                    style={{ background: "linear-gradient(135deg, oklch(0.55 0.14 75), oklch(0.45 0.12 65))", color: "white" }}>
+                    {submitting && <Loader2 className="size-4 animate-spin" />} Sign In
+                  </button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    New here?{" "}
+                    <button type="button" onClick={() => setMode("signup")} className="underline underline-offset-2 hover:text-foreground">
+                      Create an account
+                    </button>
+                  </p>
+                </form>
+              ) : (
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <Field icon={User} label="Username" error={errors.username}>
+                      <input className={inputCls} value={signup.username}
+                        onChange={(e) => setSignup({ ...signup, username: e.target.value })}
+                        placeholder="aisha_jewels" />
+                    </Field>
+                    <Field icon={User} label="Full Name" error={errors.full_name}>
+                      <input autoComplete="name" className={inputCls} value={signup.full_name}
+                        onChange={(e) => setSignup({ ...signup, full_name: e.target.value })}
+                        placeholder="Aisha Al-Mansouri" />
+                    </Field>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <Field icon={Mail} label="Email" error={errors.email}>
+                      <input type="email" autoComplete="email" className={inputCls} value={signup.email}
+                        onChange={(e) => setSignup({ ...signup, email: e.target.value })}
+                        placeholder="you@example.com" />
+                    </Field>
+                    <Field icon={Phone} label="Phone (optional)" error={errors.phone}>
+                      <input type="tel" autoComplete="tel" className={inputCls} value={signup.phone}
+                        onChange={(e) => setSignup({ ...signup, phone: e.target.value })}
+                        placeholder="+971 5x xxx xxxx" />
+                    </Field>
+                  </div>
+                  <Field icon={Lock} label="Password" error={errors.password}>
+                    <input type="password" autoComplete="new-password" className={inputCls} value={signup.password}
+                      onChange={(e) => setSignup({ ...signup, password: e.target.value })}
+                      placeholder="At least 8 characters" />
+                  </Field>
+
+                  <div className="pt-2">
+                    <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mb-3 flex items-center gap-2">
+                      <MapPin className="size-3.5" /> Shipping Address
+                    </div>
+                    <div className="space-y-4">
+                      <Field label="Address Line 1" error={errors.address_line1}>
+                        <input className={inputCls} value={signup.address_line1}
+                          onChange={(e) => setSignup({ ...signup, address_line1: e.target.value })}
+                          placeholder="Street and number" />
+                      </Field>
+                      <Field label="Address Line 2 (optional)" error={errors.address_line2}>
+                        <input className={inputCls} value={signup.address_line2}
+                          onChange={(e) => setSignup({ ...signup, address_line2: e.target.value })}
+                          placeholder="Apt, suite, building" />
+                      </Field>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <Field label="City" error={errors.city}>
+                          <input className={inputCls} value={signup.city}
+                            onChange={(e) => setSignup({ ...signup, city: e.target.value })} placeholder="Dubai" />
+                        </Field>
+                        <Field label="State / Emirate (optional)" error={errors.state}>
+                          <input className={inputCls} value={signup.state}
+                            onChange={(e) => setSignup({ ...signup, state: e.target.value })} placeholder="" />
+                        </Field>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <Field label="Postal Code" error={errors.postal_code}>
+                          <input className={inputCls} value={signup.postal_code}
+                            onChange={(e) => setSignup({ ...signup, postal_code: e.target.value })} placeholder="00000" />
+                        </Field>
+                        <Field label="Country" error={errors.country}>
+                          <input className={inputCls} value={signup.country}
+                            onChange={(e) => setSignup({ ...signup, country: e.target.value })} placeholder="United Arab Emirates" />
+                        </Field>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="submit" disabled={submitting}
+                    className="neo-pressable w-full py-3 rounded-2xl font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+                    style={{ background: "linear-gradient(135deg, oklch(0.55 0.14 75), oklch(0.45 0.12 65))", color: "white" }}>
+                    {submitting && <Loader2 className="size-4 animate-spin" />} Create Account
+                  </button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Already a member?{" "}
+                    <button type="button" onClick={() => setMode("login")} className="underline underline-offset-2 hover:text-foreground">
+                      Sign in
+                    </button>
+                  </p>
+                </form>
+              )}
+            </div>
+
+            <p className="text-[11px] text-center text-muted-foreground mt-6">
+              <Link to="/" className="hover:text-foreground">Continue browsing</Link>
+            </p>
+          </div>
+        </PageShell>
+      </main>
+      <Footer />
+    </div>
+  );
+}
