@@ -143,9 +143,25 @@ export default function Navbar() {
           <SearchBox className="hidden md:flex flex-1 max-w-md mx-2 lg:mx-4" />
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <Link to="/account/settings" className="neo-sm p-2.5 hidden sm:grid place-items-center" aria-label="Account settings">
-              <User className="size-4" />
-            </Link>
+            {user ? (
+              <>
+                <Link to="/account/settings" className="neo-sm p-2.5 hidden sm:grid place-items-center" aria-label="Account settings">
+                  <User className="size-4" />
+                </Link>
+                <button
+                  onClick={() => supabase.auth.signOut()}
+                  className="neo-sm p-2.5 hidden sm:grid place-items-center"
+                  aria-label="Sign out"
+                  title="Sign out"
+                >
+                  <LogOut className="size-4" />
+                </button>
+              </>
+            ) : (
+              <Link to="/auth" className="neo-sm p-2.5 hidden sm:grid place-items-center" aria-label="Sign in or register">
+                <User className="size-4" />
+              </Link>
+            )}
             <Link
               to="/favorites"
               className="neo-sm p-2.5 grid place-items-center relative"
