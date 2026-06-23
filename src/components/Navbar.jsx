@@ -108,6 +108,7 @@ export default function Navbar() {
   const favCount = favs.length;
   const bagCount = useBagCount();
   const navOpen = useMobileNavOpen();
+  const { user } = useAuth();
 
   return (
     <>
