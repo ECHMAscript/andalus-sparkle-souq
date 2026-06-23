@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Search, User, Heart, Menu, X } from "lucide-react";
+import { Search, User, Heart, Menu, X, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/use-auth";
 import { products, categoryTiles } from "@/lib/products";
 import {
   useFavorites,
