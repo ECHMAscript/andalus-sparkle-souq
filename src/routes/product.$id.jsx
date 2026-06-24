@@ -107,6 +107,7 @@ function ProductPage() {
   const [isCustom, setIsCustom] = useState(false);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const finalSize = isCustom ? `Custom: ${customSize.trim()}` : size;
   const canAdd = isCustom ? customSize.trim().length > 0 : !!size;
