@@ -9,6 +9,7 @@ import SouqBag from "@/components/SouqBag";
 import { findProductById, sizeGuides, products } from "@/lib/products";
 import { addToBag, useFavorites, toggleFavorite } from "@/lib/store";
 import { ProductCard } from "@/components/Products";
+import SizeGuide from "@/components/SizeGuide";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -106,6 +107,7 @@ function ProductPage() {
   const [isCustom, setIsCustom] = useState(false);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const finalSize = isCustom ? `Custom: ${customSize.trim()}` : size;
   const canAdd = isCustom ? customSize.trim().length > 0 : !!size;
@@ -145,7 +147,13 @@ function ProductPage() {
             </p>
           </div>
 
-          <div className="flex flex-col">
+          <div className="relative overflow-hidden">
+            <div
+              aria-hidden={showGuide}
+              className={`flex flex-col transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] ${
+                showGuide ? "-translate-x-[110%] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
+              }`}
+            >
             <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
               {p.style} · {p.material}
             </div>
@@ -176,7 +184,10 @@ function ProductPage() {
                   <div className="text-xs uppercase tracking-[0.25em] text-foreground/80">
                     Select your size
                   </div>
-                  <button className="text-[11px] uppercase tracking-widest text-muted-foreground hover:text-primary">
+                  <button
+                    onClick={() => setShowGuide(true)}
+                    className="text-[11px] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+                  >
                     Size guide
                   </button>
                 </div>
@@ -303,6 +314,17 @@ function ProductPage() {
                   <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{t}</div>
                 </div>
               ))}
+            </div>
+            </div>
+
+            {/* Size guide panel — slides in from the right when toggled */}
+            <div
+              aria-hidden={!showGuide}
+              className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] ${
+                showGuide ? "translate-x-0 opacity-100" : "translate-x-[110%] opacity-0 pointer-events-none"
+              }`}
+            >
+              <SizeGuide category={p.category} onClose={() => setShowGuide(false)} />
             </div>
           </div>
         </div>
