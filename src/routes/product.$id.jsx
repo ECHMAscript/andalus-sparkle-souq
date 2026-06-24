@@ -147,7 +147,13 @@ function ProductPage() {
             </p>
           </div>
 
-          <div className="flex flex-col">
+          <div className="relative overflow-hidden">
+            <div
+              aria-hidden={showGuide}
+              className={`flex flex-col transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] ${
+                showGuide ? "-translate-x-[110%] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
+              }`}
+            >
             <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
               {p.style} · {p.material}
             </div>
