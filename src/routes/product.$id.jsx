@@ -9,6 +9,7 @@ import SouqBag from "@/components/SouqBag";
 import { findProductById, sizeGuides, products } from "@/lib/products";
 import { addToBag, useFavorites, toggleFavorite } from "@/lib/store";
 import { ProductCard } from "@/components/Products";
+import SizeGuide from "@/components/SizeGuide";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
