@@ -315,6 +315,17 @@ function ProductPage() {
                 </div>
               ))}
             </div>
+            </div>
+
+            {/* Size guide panel — slides in from the right when toggled */}
+            <div
+              aria-hidden={!showGuide}
+              className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] ${
+                showGuide ? "translate-x-0 opacity-100" : "translate-x-[110%] opacity-0 pointer-events-none"
+              }`}
+            >
+              <SizeGuide category={p.category} onClose={() => setShowGuide(false)} />
+            </div>
           </div>
         </div>
 
