@@ -184,7 +184,10 @@ function ProductPage() {
                   <div className="text-xs uppercase tracking-[0.25em] text-foreground/80">
                     Select your size
                   </div>
-                  <button className="text-[11px] uppercase tracking-widest text-muted-foreground hover:text-primary">
+                  <button
+                    onClick={() => setShowGuide(true)}
+                    className="text-[11px] uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+                  >
                     Size guide
                   </button>
                 </div>
