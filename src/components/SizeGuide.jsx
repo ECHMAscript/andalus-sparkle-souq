@@ -3,17 +3,16 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
 /**
- * Each guide provides:
- *  - A Diagram component that receives `activeStep` + `onStepClick` and
- *    renders numbered hotspots at meaningful points on the illustration.
- *  - `steps`: the text bubble shown when a hotspot is clicked. Titles are
- *    short; bodies explain the step with units and tolerances.
- *  - `chart`: a size reference table shown beneath.
+ * Each guide's diagram literally illustrates the measurement METHOD
+ * (string around finger, tape around wrist, ruler measuring the mark, etc).
+ * Numbered hotspots are placed ON the part of the illustration that shows
+ * that step, and clicking a hotspot reveals the detailed instruction.
+ *
+ * Instructions are sourced from standard jeweller sizing guidance
+ * (Blue Nile, Tiffany & Co., GIA, Mejuri sizing references).
  */
 
 // ---- Hotspot primitive ------------------------------------------------------
-// A gold-rimmed numbered dot placed at (x, y) in SVG user units. Clicking it
-// bubbles the step index up to the parent so the info card can update.
 function Hotspot({ n, x, y, active, onClick }) {
   return (
     <g
@@ -23,7 +22,6 @@ function Hotspot({ n, x, y, active, onClick }) {
       }}
       style={{ cursor: "pointer" }}
     >
-      {/* soft halo when active */}
       {active && (
         <circle cx={x} cy={y} r="13" fill="currentColor" opacity="0.15">
           <animate attributeName="r" values="10;15;10" dur="1.6s" repeatCount="indefinite" />
@@ -52,347 +50,455 @@ function Hotspot({ n, x, y, active, onClick }) {
   );
 }
 
-// ---- Diagrams ---------------------------------------------------------------
+// ---- RING: string-and-ruler method -----------------------------------------
+// Illustrates: (1) wrap string around finger base, (2) mark overlap with pen,
+// (3) lay string flat and measure length in mm with a ruler, (4) divide by π
+// to get inner diameter / look up size on chart.
 function RingDiagram({ activeStep, onStepClick }) {
   return (
-    <svg viewBox="0 0 260 180" className="w-full h-auto" role="img">
+    <svg viewBox="0 0 300 220" className="w-full h-auto" role="img">
       <g fill="none" stroke="currentColor" strokeWidth="1.4">
-        {/* finger */}
-        <path d="M100 12 C 92 60, 92 110, 100 168" opacity="0.35" />
-        <path d="M160 12 C 168 60, 168 110, 160 168" opacity="0.35" />
-        {/* ring band */}
-        <ellipse cx="130" cy="92" rx="42" ry="52" />
-        <ellipse cx="130" cy="92" rx="34" ry="44" strokeDasharray="3 3" opacity="0.55" />
-        {/* inner diameter arrow */}
-        <line x1="96" y1="92" x2="164" y2="92" opacity="0.6" />
-        <path d="M96 92 l6 -4 M96 92 l6 4 M164 92 l-6 -4 M164 92 l-6 4" />
+        {/* Step 1 — finger with string wrapped around base */}
+        <path d="M55 20 C 45 70, 45 130, 55 205" opacity="0.4" />
+        <path d="M95 20 C 105 70, 105 130, 95 205" opacity="0.4" />
+        {/* string loop around finger base */}
+        <ellipse cx="75" cy="120" rx="26" ry="9" stroke="currentColor" strokeWidth="1.6" />
+        {/* loose string ends dangling */}
+        <path d="M99 118 C 115 122, 118 135, 112 148" strokeWidth="1.2" />
+        <path d="M101 122 C 118 128, 122 140, 116 152" strokeWidth="1.2" opacity="0.7" />
+
+        {/* Step 2 — pen marking the overlap point */}
+        <path d="M132 70 l 22 -22 l 8 8 l -22 22 z" />
+        <path d="M154 48 l 8 8" />
+        <circle cx="132" cy="80" r="2" fill="currentColor" />
+        <text x="128" y="96" fontSize="8" fill="currentColor" opacity="0.7">mark</text>
+
+        {/* Step 3 — string laid flat next to ruler, measured in mm */}
+        <line x1="150" y1="150" x2="285" y2="150" strokeWidth="1.6" />
+        {/* ruler */}
+        <rect x="150" y="165" width="135" height="18" rx="1.5" />
+        {[0, 15, 30, 45, 60, 75, 90, 105, 120, 135].map((t) => (
+          <line key={t} x1={150 + t} y1="165" x2={150 + t} y2={t % 30 === 0 ? 175 : 171} />
+        ))}
+        <text x="150" y="197" fontSize="7" fill="currentColor" opacity="0.7">0</text>
+        <text x="207" y="197" fontSize="7" fill="currentColor" opacity="0.7">mm</text>
+        <text x="280" y="197" fontSize="7" fill="currentColor" opacity="0.7">55</text>
+        {/* marked point on string */}
+        <circle cx="205" cy="150" r="2.5" fill="currentColor" />
+
+        {/* Step 4 — chart / size lookup card */}
+        <rect x="200" y="30" width="80" height="70" rx="4" />
+        <line x1="200" y1="48" x2="280" y2="48" opacity="0.5" />
+        <line x1="240" y1="30" x2="240" y2="100" opacity="0.5" />
+        <text x="220" y="43" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.8">SIZE</text>
+        <text x="260" y="43" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.8">mm</text>
+        <text x="220" y="62" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">6</text>
+        <text x="260" y="62" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">51.9</text>
+        <text x="220" y="76" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">7</text>
+        <text x="260" y="76" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">54.4</text>
+        <text x="220" y="90" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">8</text>
+        <text x="260" y="90" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">57.0</text>
       </g>
-      <text x="130" y="86" textAnchor="middle" fontSize="8" fill="currentColor" letterSpacing="2" opacity="0.85">
-        INNER ⌀
-      </text>
-      <Hotspot n={1} x={130} y={30} active={activeStep === 1} onClick={onStepClick} />
-      <Hotspot n={2} x={130} y={92} active={activeStep === 2} onClick={onStepClick} />
-      <Hotspot n={3} x={172} y={140} active={activeStep === 3} onClick={onStepClick} />
-      <Hotspot n={4} x={88} y={140} active={activeStep === 4} onClick={onStepClick} />
+      <Hotspot n={1} x={75} y={120} active={activeStep === 1} onClick={onStepClick} />
+      <Hotspot n={2} x={140} y={62} active={activeStep === 2} onClick={onStepClick} />
+      <Hotspot n={3} x={205} y={150} active={activeStep === 3} onClick={onStepClick} />
+      <Hotspot n={4} x={240} y={65} active={activeStep === 4} onClick={onStepClick} />
     </svg>
   );
 }
 
+// ---- NECKLACE: tape from nape, drop points on torso ------------------------
 function NecklaceDiagram({ activeStep, onStepClick }) {
   return (
-    <svg viewBox="0 0 260 200" className="w-full h-auto" role="img">
+    <svg viewBox="0 0 260 240" className="w-full h-auto" role="img">
       <g fill="none" stroke="currentColor" strokeWidth="1.4">
-        {/* neck & shoulders */}
-        <path d="M90 30 C 100 55, 100 70, 90 90 L 40 130" opacity="0.35" />
-        <path d="M170 30 C 160 55, 160 70, 170 90 L 220 130" opacity="0.35" />
-        {/* chains at different lengths */}
-        <path d="M90 40 C 110 78, 150 78, 170 40" />
-        <path d="M85 40 C 115 100, 145 100, 175 40" opacity="0.7" />
-        <path d="M80 40 C 120 130, 140 130, 180 40" opacity="0.45" />
-        {/* pendant */}
-        <line x1="130" y1="130" x2="130" y2="150" strokeDasharray="2 3" />
-        <path d="M130 150 l6 8 l-6 8 l-6 -8 z" />
+        {/* head + torso silhouette */}
+        <circle cx="130" cy="35" r="20" opacity="0.4" />
+        <path d="M110 55 C 100 70, 100 80, 90 95 L 40 140 L 40 230" opacity="0.4" />
+        <path d="M150 55 C 160 70, 160 80, 170 95 L 220 140 L 220 230" opacity="0.4" />
+        <path d="M110 55 L 150 55" opacity="0.4" />
+
+        {/* Step 1 — tape at nape / base of neck */}
+        <path d="M108 62 Q 130 72, 152 62" strokeDasharray="3 2" opacity="0.7" />
+
+        {/* Step 2 — tape draped down front, chain resting at collarbone (16") */}
+        <path d="M108 62 C 118 85, 142 85, 152 62" />
+        {/* Step 3 — 18" princess just below collarbone */}
+        <path d="M100 70 C 118 105, 142 105, 160 70" opacity="0.75" />
+        {/* Step 4 — 20-24" matinee / opera on chest */}
+        <path d="M92 78 C 118 140, 142 140, 168 78" opacity="0.55" />
+        <path d="M85 82 C 118 180, 142 180, 175 82" opacity="0.4" />
+
+        {/* rest-point markers on body */}
+        <line x1="105" y1="80" x2="155" y2="80" strokeDasharray="1 3" opacity="0.5" />
+        <line x1="100" y1="105" x2="160" y2="105" strokeDasharray="1 3" opacity="0.5" />
+        <line x1="95" y1="140" x2="165" y2="140" strokeDasharray="1 3" opacity="0.5" />
+
+        {/* length labels */}
+        <text x="205" y="82" fontSize="8" fill="currentColor" opacity="0.7">16"</text>
+        <text x="205" y="108" fontSize="8" fill="currentColor" opacity="0.7">18"</text>
+        <text x="205" y="143" fontSize="8" fill="currentColor" opacity="0.7">20–22"</text>
+        <text x="205" y="182" fontSize="8" fill="currentColor" opacity="0.7">24"+</text>
       </g>
-      <Hotspot n={1} x={130} y={62} active={activeStep === 1} onClick={onStepClick} />
-      <Hotspot n={2} x={130} y={92} active={activeStep === 2} onClick={onStepClick} />
-      <Hotspot n={3} x={130} y={128} active={activeStep === 3} onClick={onStepClick} />
-      <Hotspot n={4} x={130} y={166} active={activeStep === 4} onClick={onStepClick} />
+      <Hotspot n={1} x={130} y={65} active={activeStep === 1} onClick={onStepClick} />
+      <Hotspot n={2} x={130} y={82} active={activeStep === 2} onClick={onStepClick} />
+      <Hotspot n={3} x={130} y={107} active={activeStep === 3} onClick={onStepClick} />
+      <Hotspot n={4} x={130} y={165} active={activeStep === 4} onClick={onStepClick} />
     </svg>
   );
 }
 
+// ---- BRACELET: tape wrapped around wrist -----------------------------------
 function BraceletDiagram({ activeStep, onStepClick }) {
   return (
-    <svg viewBox="0 0 260 180" className="w-full h-auto" role="img">
+    <svg viewBox="0 0 300 200" className="w-full h-auto" role="img">
       <g fill="none" stroke="currentColor" strokeWidth="1.4">
-        {/* forearm */}
-        <path d="M20 60 L 240 60" opacity="0.3" />
-        <path d="M20 120 L 240 120" opacity="0.3" />
-        {/* wrist bone marker */}
-        <circle cx="80" cy="60" r="3" opacity="0.6" />
-        {/* bangle wrapping wrist */}
-        <ellipse cx="140" cy="90" rx="52" ry="30" />
-        <ellipse cx="140" cy="90" rx="52" ry="30" strokeDasharray="2 4" opacity="0.4" transform="rotate(6 140 90)" />
-        {/* clasp */}
-        <rect x="188" y="86" width="10" height="8" rx="1.5" />
+        {/* hand + forearm outline */}
+        <path d="M20 75 L 150 75 Q 175 75, 185 65 L 220 55 L 235 60 L 240 78 L 220 90 L 200 90 Q 195 100, 200 108 L 210 118 L 205 130 L 185 125 L 175 118 L 150 125 L 20 125 Z" opacity="0.35" />
+        {/* wrist bone bump */}
+        <circle cx="150" cy="75" r="3" opacity="0.7" />
+        <text x="153" y="70" fontSize="7" fill="currentColor" opacity="0.6">wrist bone</text>
+
+        {/* Step 2 — tape wrapped around wrist just past the bone */}
+        <ellipse cx="130" cy="100" rx="8" ry="26" strokeWidth="1.7" />
+        <ellipse cx="130" cy="100" rx="8" ry="26" strokeWidth="1.7" opacity="0.4" transform="rotate(3 130 100)" />
+
+        {/* Step 3 — tape unrolled below, measuring in mm/inches */}
+        <rect x="30" y="155" width="240" height="20" rx="1.5" />
+        {[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240].map((t) => (
+          <line key={t} x1={30 + t} y1="155" x2={30 + t} y2={t % 40 === 0 ? 165 : 161} />
+        ))}
+        <text x="30" y="188" fontSize="7" fill="currentColor" opacity="0.7">0</text>
+        <text x="150" y="188" fontSize="7" fill="currentColor" opacity="0.7">100 mm</text>
+        <text x="245" y="188" fontSize="7" fill="currentColor" opacity="0.7">200 mm</text>
+        {/* marked measurement point */}
+        <circle cx="200" cy="155" r="2.5" fill="currentColor" />
+
+        {/* Step 4 — add ease (½–1 inch) indicator */}
+        <path d="M200 148 L 230 148" strokeDasharray="2 2" />
+        <path d="M200 148 l 4 -3 M200 148 l 4 3 M230 148 l -4 -3 M230 148 l -4 3" />
+        <text x="215" y="142" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.75">+ ease</text>
       </g>
-      <Hotspot n={1} x={80} y={80} active={activeStep === 1} onClick={onStepClick} />
-      <Hotspot n={2} x={140} y={90} active={activeStep === 2} onClick={onStepClick} />
-      <Hotspot n={3} x={193} y={90} active={activeStep === 3} onClick={onStepClick} />
-      <Hotspot n={4} x={140} y={140} active={activeStep === 4} onClick={onStepClick} />
+      <Hotspot n={1} x={150} y={75} active={activeStep === 1} onClick={onStepClick} />
+      <Hotspot n={2} x={130} y={100} active={activeStep === 2} onClick={onStepClick} />
+      <Hotspot n={3} x={150} y={165} active={activeStep === 3} onClick={onStepClick} />
+      <Hotspot n={4} x={215} y={148} active={activeStep === 4} onClick={onStepClick} />
     </svg>
   );
 }
 
+// ---- ANKLET: tape around ankle above the bone ------------------------------
 function AnkletDiagram({ activeStep, onStepClick }) {
   return (
-    <svg viewBox="0 0 260 200" className="w-full h-auto" role="img">
+    <svg viewBox="0 0 300 220" className="w-full h-auto" role="img">
       <g fill="none" stroke="currentColor" strokeWidth="1.4">
-        {/* leg */}
-        <path d="M100 10 L 100 110 Q 100 150, 140 150 L 230 150" opacity="0.35" />
-        <path d="M130 10 L 130 100 Q 130 130, 150 130" opacity="0.35" />
-        {/* ankle bone */}
-        <circle cx="115" cy="128" r="3" opacity="0.6" />
-        {/* anklet */}
-        <ellipse cx="155" cy="140" rx="55" ry="14" />
-        {/* bell charm */}
-        <line x1="205" y1="145" x2="212" y2="160" strokeDasharray="1 2" />
-        <circle cx="212" cy="164" r="4" />
+        {/* leg + foot */}
+        <path d="M110 10 L 108 130 Q 108 155, 128 158 L 240 158 L 250 168 L 250 178 L 230 185 L 130 180 Q 100 178, 96 155 L 96 10" opacity="0.35" />
+        {/* ankle bone marker */}
+        <circle cx="105" cy="145" r="3" opacity="0.7" />
+        <text x="20" y="148" fontSize="7" fill="currentColor" opacity="0.7">ankle bone</text>
+        <path d="M55 148 L 95 148" strokeDasharray="1 2" opacity="0.5" />
+
+        {/* Step 2 — tape wrapped ABOVE the bone */}
+        <ellipse cx="102" cy="128" rx="12" ry="6" strokeWidth="1.7" />
+        <ellipse cx="102" cy="128" rx="12" ry="6" strokeWidth="1.7" opacity="0.4" transform="rotate(4 102 128)" />
+
+        {/* Step 3 — measured while standing barefoot */}
+        <line x1="200" y1="185" x2="200" y2="210" opacity="0.5" />
+        <path d="M195 210 L 205 210" />
+        <text x="145" y="200" fontSize="8" fill="currentColor" opacity="0.7">stand barefoot</text>
+
+        {/* Step 4 — extra drape ease shown as loose loop */}
+        <path d="M180 60 C 220 55, 260 65, 270 90 C 275 110, 250 120, 220 115 C 195 112, 180 95, 180 60 Z" opacity="0.5" strokeDasharray="3 3" />
+        <text x="225" y="90" textAnchor="middle" fontSize="8" fill="currentColor" opacity="0.75">+ drape</text>
       </g>
-      <Hotspot n={1} x={115} y={128} active={activeStep === 1} onClick={onStepClick} />
-      <Hotspot n={2} x={155} y={140} active={activeStep === 2} onClick={onStepClick} />
-      <Hotspot n={3} x={212} y={164} active={activeStep === 3} onClick={onStepClick} />
-      <Hotspot n={4} x={155} y={178} active={activeStep === 4} onClick={onStepClick} />
+      <Hotspot n={1} x={105} y={145} active={activeStep === 1} onClick={onStepClick} />
+      <Hotspot n={2} x={102} y={128} active={activeStep === 2} onClick={onStepClick} />
+      <Hotspot n={3} x={200} y={200} active={activeStep === 3} onClick={onStepClick} />
+      <Hotspot n={4} x={225} y={90} active={activeStep === 4} onClick={onStepClick} />
     </svg>
   );
 }
 
+// ---- EARRING: measure drop from post, weigh on scale -----------------------
 function EarringDiagram({ activeStep, onStepClick }) {
   return (
-    <svg viewBox="0 0 260 200" className="w-full h-auto" role="img">
+    <svg viewBox="0 0 300 220" className="w-full h-auto" role="img">
       <g fill="none" stroke="currentColor" strokeWidth="1.4">
-        {/* ear */}
-        <path d="M140 30 Q 90 55, 100 110 Q 108 155, 140 158 Q 158 158, 162 138" opacity="0.4" />
-        <path d="M148 148 Q 158 148, 158 140 Q 158 132, 148 130" opacity="0.4" />
-        {/* piercing */}
-        <circle cx="140" cy="120" r="3" fill="currentColor" />
-        {/* post & drop */}
-        <line x1="140" y1="120" x2="140" y2="180" strokeDasharray="2 3" />
-        {/* drop element */}
-        <path d="M140 135 Q 128 155, 140 175 Q 152 155, 140 135 Z" />
-        {/* weight indicator */}
-        <line x1="175" y1="120" x2="175" y2="175" opacity="0.5" />
-        <path d="M175 120 l-4 6 M175 120 l4 6 M175 175 l-4 -6 M175 175 l4 -6" opacity="0.5" />
+        {/* ear silhouette */}
+        <path d="M80 30 Q 40 55, 45 115 Q 50 165, 90 170 Q 115 170, 118 148" opacity="0.45" />
+        <path d="M100 155 Q 112 155, 112 145 Q 112 133, 100 132" opacity="0.45" />
+        {/* piercing hole */}
+        <circle cx="90" cy="125" r="3" fill="currentColor" />
+
+        {/* Step 2 — ruler measuring drop from post */}
+        <rect x="130" y="30" width="18" height="170" rx="1.5" />
+        {[0, 20, 40, 60, 80, 100, 120, 140, 160].map((t) => (
+          <line key={t} x1="130" y1={30 + t} x2={t % 40 === 0 ? 148 : 138} y2={30 + t} />
+        ))}
+        <text x="155" y="35" fontSize="7" fill="currentColor" opacity="0.7">0</text>
+        <text x="155" y="115" fontSize="7" fill="currentColor" opacity="0.7">45 mm</text>
+        <text x="155" y="195" fontSize="7" fill="currentColor" opacity="0.7">90 mm</text>
+
+        {/* earring: post at top, drop hanging */}
+        <line x1="90" y1="125" x2="130" y2="30" strokeWidth="1" opacity="0.5" />
+        <line x1="130" y1="30" x2="130" y2="120" strokeDasharray="2 2" />
+        <path d="M130 30 Q 118 75, 130 120 Q 142 75, 130 30 Z" />
+        {/* drop endpoint */}
+        <circle cx="130" cy="120" r="2.5" fill="currentColor" />
+
+        {/* Step 3 — weight on a small scale */}
+        <rect x="200" y="150" width="80" height="50" rx="4" />
+        <line x1="200" y1="175" x2="280" y2="175" opacity="0.5" />
+        <text x="240" y="170" textAnchor="middle" fontSize="10" fontWeight="700" fill="currentColor" opacity="0.85">4.2 g</text>
+        <text x="240" y="192" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.6">weight per earring</text>
+
+        {/* Step 4 — clearance to shoulder */}
+        <line x1="270" y1="30" x2="270" y2="130" strokeDasharray="3 3" opacity="0.6" />
+        <path d="M266 30 L 274 30 M266 130 L 274 130" opacity="0.6" />
+        <text x="278" y="82" fontSize="7" fill="currentColor" opacity="0.75">shoulder</text>
+        <text x="278" y="92" fontSize="7" fill="currentColor" opacity="0.75">clearance</text>
       </g>
-      <Hotspot n={1} x={140} y={120} active={activeStep === 1} onClick={onStepClick} />
-      <Hotspot n={2} x={140} y={155} active={activeStep === 2} onClick={onStepClick} />
-      <Hotspot n={3} x={175} y={148} active={activeStep === 3} onClick={onStepClick} />
-      <Hotspot n={4} x={140} y={188} active={activeStep === 4} onClick={onStepClick} />
+      <Hotspot n={1} x={90} y={125} active={activeStep === 1} onClick={onStepClick} />
+      <Hotspot n={2} x={130} y={75} active={activeStep === 2} onClick={onStepClick} />
+      <Hotspot n={3} x={240} y={175} active={activeStep === 3} onClick={onStepClick} />
+      <Hotspot n={4} x={270} y={80} active={activeStep === 4} onClick={onStepClick} />
     </svg>
   );
 }
 
+// ---- BRIDAL: parure sized as a set -----------------------------------------
 function BridalDiagram({ activeStep, onStepClick }) {
   return (
-    <svg viewBox="0 0 280 200" className="w-full h-auto" role="img">
+    <svg viewBox="0 0 300 220" className="w-full h-auto" role="img">
       <g fill="none" stroke="currentColor" strokeWidth="1.4">
-        {/* ring */}
-        <circle cx="55" cy="55" r="22" />
-        <circle cx="55" cy="55" r="16" strokeDasharray="2 3" opacity="0.5" />
-        {/* necklace */}
-        <path d="M120 30 C 130 90, 210 90, 220 30" />
-        <path d="M170 90 l0 12 M170 102 l-5 6 l5 6 l5 -6 z" />
-        {/* bangle */}
-        <ellipse cx="60" cy="150" rx="34" ry="12" />
-        <ellipse cx="60" cy="150" rx="34" ry="12" strokeDasharray="2 3" opacity="0.5" transform="rotate(4 60 150)" />
-        {/* earring pair */}
-        <circle cx="220" cy="135" r="3" fill="currentColor" />
-        <path d="M220 138 Q 214 152, 220 168 Q 226 152, 220 138 Z" />
+        {/* head + shoulders */}
+        <circle cx="150" cy="40" r="22" opacity="0.4" />
+        <path d="M128 62 C 118 78, 118 88, 108 100 L 60 140" opacity="0.4" />
+        <path d="M172 62 C 182 78, 182 88, 192 100 L 240 140" opacity="0.4" />
+
+        {/* Step 1 — ring on hand (anchor size) */}
+        <circle cx="45" cy="180" r="14" />
+        <circle cx="45" cy="180" r="9" strokeDasharray="2 2" opacity="0.5" />
+        <text x="45" y="205" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">ring (anchor)</text>
+
+        {/* Step 2 — necklace matched to neckline */}
+        <path d="M128 70 C 140 100, 160 100, 172 70" />
+        <path d="M120 72 C 140 115, 160 115, 180 72" opacity="0.65" />
+        <line x1="128" y1="88" x2="172" y2="88" strokeDasharray="1 3" opacity="0.5" />
+        <text x="200" y="90" fontSize="7" fill="currentColor" opacity="0.7">neckline match</text>
+
+        {/* Step 3 — bangle over knuckles */}
+        <ellipse cx="120" cy="180" rx="24" ry="8" />
+        <ellipse cx="120" cy="180" rx="24" ry="8" strokeDasharray="2 2" opacity="0.5" transform="rotate(4 120 180)" />
+        <text x="120" y="205" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">bangle over knuckle</text>
+
+        {/* Step 4 — earring drop vs hairstyle */}
+        <circle cx="230" cy="165" r="3" fill="currentColor" />
+        <path d="M230 168 Q 220 185, 230 205 Q 240 185, 230 168 Z" />
+        <text x="230" y="217" textAnchor="middle" fontSize="7" fill="currentColor" opacity="0.7">earring drop</text>
       </g>
-      <text x="55" y="98" textAnchor="middle" fontSize="8" fill="currentColor" letterSpacing="1.5" opacity="0.7">RING</text>
-      <text x="170" y="24" textAnchor="middle" fontSize="8" fill="currentColor" letterSpacing="1.5" opacity="0.7">NECKLACE</text>
-      <text x="60" y="180" textAnchor="middle" fontSize="8" fill="currentColor" letterSpacing="1.5" opacity="0.7">BANGLE</text>
-      <text x="220" y="185" textAnchor="middle" fontSize="8" fill="currentColor" letterSpacing="1.5" opacity="0.7">EARRING</text>
-      <Hotspot n={1} x={55} y={55} active={activeStep === 1} onClick={onStepClick} />
-      <Hotspot n={2} x={170} y={80} active={activeStep === 2} onClick={onStepClick} />
-      <Hotspot n={3} x={60} y={150} active={activeStep === 3} onClick={onStepClick} />
-      <Hotspot n={4} x={220} y={155} active={activeStep === 4} onClick={onStepClick} />
+      <Hotspot n={1} x={45} y={180} active={activeStep === 1} onClick={onStepClick} />
+      <Hotspot n={2} x={150} y={92} active={activeStep === 2} onClick={onStepClick} />
+      <Hotspot n={3} x={120} y={180} active={activeStep === 3} onClick={onStepClick} />
+      <Hotspot n={4} x={230} y={185} active={activeStep === 4} onClick={onStepClick} />
     </svg>
   );
 }
 
-// ---- Guide data -------------------------------------------------------------
+// ---- Guide data (sourced from standard jeweller sizing guidance) -----------
 const GUIDES = {
   Rings: {
     diagram: RingDiagram,
     intro:
-      "Ring size is the inner circumference of the band, measured in millimetres. Fingers swell in heat and after meals, so we recommend taking three readings across the day and rounding up.",
+      "The most reliable at-home method is the string-and-ruler technique used by most jewellers. You'll need a strip of paper or a piece of non-stretchy string, a pen, and a millimetre ruler.",
     steps: [
       {
-        title: "Warm the finger first",
+        title: "Wrap a string around the base of your finger",
         body:
-          "Measure late in the day when the finger is at its widest. Avoid taking a reading after a cold shower or a long flight — you'll size a full mm small.",
+          "Cut a 100 mm piece of non-stretchy string or a thin strip of paper. Wrap it around the base of the finger you'll wear the ring on. It should sit flat against the skin — snug, but not tight enough to leave a mark. Measure late in the day when the finger is at its widest, and never right after a cold shower.",
       },
       {
-        title: "Read the inner diameter",
+        title: "Mark where the string overlaps",
         body:
-          "The number quoted on the chart is the inside of the band, in millimetres. A ring that already fits: measure the inside with a caliper — that is your target ⌀.",
+          "With a pen, make a small mark exactly where the string overlaps itself. That single point represents the full circumference of your finger — this is the measurement the ring size is calculated from. Take three separate readings and use the largest of the three.",
       },
       {
-        title: "Clear the knuckle",
+        title: "Lay the string flat and measure the length in millimetres",
         body:
-          "The band must slide over the knuckle then rest snug at the base. If the knuckle is much wider than the base, size for the knuckle and we'll add a discreet sizing bead inside the band, free of charge.",
+          "Unwrap the string, lay it flat next to a millimetre ruler, and read the distance from the end of the string to the pen mark. This number is your finger circumference in mm — for example, 54.4 mm. Millimetres only; inches will not give you an accurate size.",
       },
       {
-        title: "Season & climate",
+        title: "Look up the size on the chart",
         body:
-          "In cold seasons the finger can lose up to 0.4 mm. If you live in a cold climate or wear the ring year-round, choose the larger of two half-sizes.",
+          "Find your circumference in the chart below to get your ring size. If your reading falls between two sizes, always round UP — a slightly loose ring can be resized down, but a ring that won't clear the knuckle cannot be worn at all.",
       },
     ],
     chart: [
-      ["Size 5", "49.3 mm inner ⌀"],
-      ["Size 6", "51.9 mm inner ⌀"],
-      ["Size 7", "54.4 mm inner ⌀"],
-      ["Size 8", "57.0 mm inner ⌀"],
-      ["Size 9", "59.5 mm inner ⌀"],
-      ["Size 10", "62.1 mm inner ⌀"],
+      ["Size 5", "49.3 mm circumference"],
+      ["Size 6", "51.9 mm circumference"],
+      ["Size 7", "54.4 mm circumference"],
+      ["Size 8", "57.0 mm circumference"],
+      ["Size 9", "59.5 mm circumference"],
+      ["Size 10", "62.1 mm circumference"],
     ],
   },
   Necklaces: {
     diagram: NecklaceDiagram,
     intro:
-      "Chain length is measured end-to-end with the necklace laid flat, in inches. The length dictates where the pendant will rest on your chest.",
+      "Necklaces aren't sized to your body — they come in fixed lengths. The choice is about where you want the chain (and any pendant) to rest. Use a tape measure held against your body to preview each length before you order.",
     steps: [
       {
-        title: "16\" — Choker",
+        title: "Start at the base of the neck",
         body:
-          "Sits at the base of the throat, above the collarbone. Best over open necklines and evening dresses; not ideal for high collars.",
+          "Loop a soft tape measure around the base of your neck where a shirt collar would sit. This is the 'zero point' — every standard length is measured from here. A 14\" chain sits tight against the throat (a true collar); most people want at least 16\".",
       },
       {
-        title: "18\" — Princess",
+        title: "16\" — Choker, at the collarbone",
         body:
-          "Falls just below the collarbone — the most universal length. Works with almost every neckline and layers well with an 20\" chain.",
+          "Sits right on the collarbone. Best over open necklines, boat necks and evening dresses. Avoid with high collars or turtlenecks — the chain will disappear into the fabric.",
       },
       {
-        title: "20–22\" — Matinée",
+        title: "18\" — Princess, just below the collarbone",
         body:
-          "Rests above the bust. Made for pendants: the extra length gives the medallion room to sway and catch light.",
+          "The most universal length and the standard for pendants. Falls just below the collarbone on most adults. Works with almost every neckline and layers cleanly with a 20\" chain above the bust.",
       },
       {
-        title: "24\"+ — Opera",
+        title: "20–24\" — Matinée & Opera, on the chest",
         body:
-          "Falls below the bust. Statement-length; often doubled into a two-tier choker for evening wear.",
+          "Matinée (20–22\") rests above the bust and is made for pendants — the drop gives the medallion room to swing and catch light. Opera (24\"+) falls below the bust; a true statement length, often doubled into a two-tier choker for evening wear.",
       },
     ],
     chart: [
+      ['14"', "Collar — tight against the throat"],
       ['16"', "Choker — at the collarbone"],
       ['18"', "Princess — just below the collarbone"],
-      ['20"', "Matinée — above the bust"],
-      ['22"', "Matinée — at the bust"],
-      ['24"', "Opera — below the bust"],
+      ['20–22"', "Matinée — above / at the bust"],
+      ['24"+', "Opera — below the bust"],
     ],
   },
   Bracelets: {
     diagram: BraceletDiagram,
     intro:
-      "Bracelets are sized by wrist circumference plus ease. Use a soft tape or a strip of paper — never a rigid ruler.",
+      "Bracelets are sized by wrist circumference plus 'ease' — extra length so the piece drapes rather than grips. Use a soft tape measure or a strip of paper, never a rigid ruler.",
     steps: [
       {
-        title: "Find the wrist bone",
+        title: "Find your wrist bone",
         body:
-          "Locate the small bump on the outside of the wrist. All measurements are taken just below this point, on the hand side.",
+          "Locate the small bump on the outside of your wrist (the ulnar styloid). All measurements are taken just BELOW this point, on the hand side — this is where the bracelet will actually sit. Measuring above the bone gives a reading that is too small.",
       },
       {
-        title: "Wrap snug, not tight",
+        title: "Wrap the tape snug against the skin — once",
         body:
-          "Wrap the tape once. It should sit flush against the skin without indenting it. Read to the nearest millimetre and convert to inches (÷ 25.4).",
+          "Wrap the tape (or strip of paper) around your wrist exactly once. It should sit flush against the skin without indenting it. If you're using paper, mark where it overlaps with a pen — same principle as the ring method.",
+      },
+      {
+        title: "Read the length in millimetres or inches",
+        body:
+          "Lay the tape or marked paper flat and read the length. That number is your bare wrist circumference. Take the reading with your hand relaxed and flat — clenching the fist adds up to 5 mm.",
       },
       {
         title: "Add ease for the clasp",
         body:
-          "Add ½\" (1.3 cm) for a tailored fit or 1\" (2.5 cm) for a drape fit. Bangles are rigid — add ¾\" so the piece slides over the knuckles.",
-      },
-      {
-        title: "Try the string test",
-        body:
-          "Cut a piece of string to your chosen length and tape it into a loop. Slip it on: it should rotate freely but not slide over the hand.",
+          "Now add extra length so the bracelet moves: add ½\" (1.3 cm) for a tailored fit that sits at the wrist bone, or 1\" (2.5 cm) for a relaxed drape that slides toward the hand. Rigid bangles need ¾\" so the piece clears your knuckles when you put it on.",
       },
     ],
     chart: [
-      ['6.5"', "Petite wrist"],
+      ['6.5"', "Petite wrist — tailored fit"],
       ['7"', "Standard wrist"],
-      ['7.5"', "Comfort fit"],
-      ['8"', "Drape / cuff fit"],
+      ['7.5"', "Comfort / drape fit"],
+      ['8"', "Cuff / bangle fit"],
     ],
   },
   Anklets: {
     diagram: AnkletDiagram,
     intro:
-      "Anklets follow the same logic as bracelets but need more ease so the piece drapes over the top of the foot rather than gripping the ankle.",
+      "Anklets follow the same principle as bracelets but sit differently — the piece drapes across the top of the foot rather than resting flat against the ankle, so you need more ease.",
     steps: [
       {
-        title: "Above the ankle bone",
+        title: "Find the ankle bone",
         body:
-          "Wrap the tape just above the ankle bone, where the anklet naturally rests. Barefoot, standing — sizing while seated adds ~3 mm.",
+          "Locate the bony bump on the outside of your ankle. This is your reference point — every measurement is taken relative to it.",
       },
       {
-        title: "Add drape ease",
+        title: "Wrap the tape ABOVE the ankle bone",
         body:
-          "Add 1 cm for a close fit or 2 cm for a relaxed drape. Traditional Khalkhal anklets are worn loose, at +2.5 cm.",
+          "Wrap a soft tape measure once around the leg just above the ankle bone, where the anklet naturally rests. Wrapping below the bone or across the foot gives a much larger reading and produces an anklet that slips off.",
       },
       {
-        title: "Charm placement",
+        title: "Measure standing, barefoot",
         body:
-          "Bells and jasmine charms are placed to hang at the outside of the ankle, never at the front — this is a deliberate choice for both sound and comfort.",
+          "Take the reading standing up and barefoot — sitting or wearing shoes narrows the ankle by 2–4 mm and will make the anklet too tight. Both ankles are rarely identical; measure the one you plan to wear it on.",
       },
       {
-        title: "Adjustable jump-ring",
+        title: "Add drape ease — 1 to 2 cm",
         body:
-          "Every anklet ships with a 2 cm adjustable chain at the clasp, so you can tune the drape after receipt. Bring both ankles into consideration — they're rarely identical.",
+          "Add 1 cm (⅜\") for a close fit that hugs the ankle, or 2 cm (¾\") for a relaxed drape that falls onto the foot. Traditional khalkhal-style anklets are worn loose at +2.5 cm so the bells sound as you walk.",
       },
     ],
     chart: [
-      ['9"', "Close fit"],
-      ['10"', "Standard"],
-      ['11"', "Relaxed drape"],
+      ['9"', "Close fit — petite ankle"],
+      ['10"', "Standard drape"],
+      ['11"', "Relaxed drape — falls on foot"],
     ],
   },
   Earrings: {
     diagram: EarringDiagram,
     intro:
-      "Earrings are described by drop (post to lowest point) and by weight. Both matter — a light earring with a long drop wears very differently to a compact but dense stud.",
+      "Earrings are described by two numbers: DROP (how far they hang below the ear) and WEIGHT (how heavy each earring is). Both matter — a light 60 mm chandelier wears very differently to a dense 20 mm stud.",
     steps: [
       {
-        title: "Post to lobe",
+        title: "Start at the piercing",
         body:
-          "The post enters the piercing and sits flush against the back of the lobe. All drop measurements start from this point, not from the top of the piece.",
+          "The post enters the piercing and sits flush against the back of the lobe. This is the ZERO point for the drop measurement — not the top of the decorative element, and not the top of the ear.",
       },
       {
-        title: "Measure the drop",
+        title: "Measure the drop with a ruler",
         body:
-          "Hold a ruler flat against the lobe and let the earring hang freely. Read the distance from the post to the lowest point — this is the drop.",
+          "Hold the earring against a ruler, letting it hang freely under its own weight. Read the distance from the post to the LOWEST point of the earring. Studs are under 15 mm; drops are 25–45 mm; chandeliers are 45 mm+.",
       },
       {
-        title: "Check the weight",
+        title: "Check the weight per earring",
         body:
-          "Under 4 g wears all-day comfortably. 4–8 g is evening-appropriate. Over 8 g we recommend a support disc (included with every chandelier).",
+          "Weight is quoted per single earring, in grams. Under 4 g wears all day comfortably. 4–8 g is evening-appropriate. Over 8 g we recommend a plastic or silicone support disc behind the lobe — one is included with every chandelier.",
       },
       {
-        title: "Clearance from shoulder",
+        title: "Check clearance to the shoulder",
         body:
-          "Chandeliers should stop at least 2 cm above the shoulder to avoid catching on fabric. Measure your lobe-to-shoulder distance if you're unsure.",
+          "For any earring over 40 mm, measure from your earlobe straight down to your shoulder. The earring drop should be at least 20 mm SHORTER than this distance, or it will catch on collars, coats and hair.",
       },
     ],
     chart: [
-      ["Small", "Up to 25 mm — studs & huggies"],
-      ["Medium", "25–45 mm — drops"],
-      ["Large", "45 mm+ — statement chandeliers"],
+      ["Studs", "Under 15 mm — all-day, any weight"],
+      ["Huggies", "15–25 mm — hug the lobe"],
+      ["Drops", "25–45 mm — everyday statement"],
+      ["Chandeliers", "45 mm+ — evening / bridal"],
     ],
   },
   Bridal: {
     diagram: BridalDiagram,
     intro:
-      "A bridal parure is sized as one set — the ring, necklace, bangle and earrings are matched so that proportions read from across the room. Take each measurement individually then choose the dominant fit.",
+      "A bridal parure is sized as a matched set — ring, necklace, bangle and earrings scaled together so the proportions read from across the room. Size each piece individually first, then check the four rules below.",
     steps: [
       {
-        title: "Ring leads",
+        title: "Size the ring first — it anchors the set",
         body:
-          "Measure the ring finger of the dominant hand as described in the Rings guide. This is the anchor — the rest of the set scales from here.",
+          "Measure your ring finger using the string-and-ruler method from the Rings guide. Because the ring is worn every day after the wedding, this measurement anchors the entire parure — the other pieces are scaled around it.",
       },
       {
-        title: "Necklace to neckline",
+        title: "Match necklace length to your neckline",
         body:
-          "Match the chain length to the neckline of the gown. High necklines want 20–22\"; sweetheart and off-shoulder want 16–18\" so the medallion sits at the décolleté.",
+          "High necks and illusion tops want a 20–22\" chain that sits below the fabric. Sweetheart, off-shoulder and strapless want a 16–18\" chain so the medallion rests on the exposed décolleté. V-necks: aim for the pendant to end 2–3 cm above the point of the V.",
       },
       {
-        title: "Bangle over the knuckles",
+        title: "Bangle must clear the knuckles",
         body:
-          "Bridal bangles are rigid. Measure the widest point of the hand with the thumb tucked in — the bangle needs to clear this to reach the wrist.",
+          "Bridal bangles are rigid — they have to pass over your closed hand to reach the wrist. Measure around the widest part of your hand with the thumb tucked in, and add ¼\" (0.6 cm). This is the bangle's inner circumference, NOT your wrist size.",
       },
       {
-        title: "Earrings & headpiece",
+        title: "Match earring drop to your hairstyle",
         body:
-          "Choose earring drop against the hairstyle. Updo → chandeliers (45 mm+). Loose hair → medium drops (25–35 mm) so the piece still reads.",
+          "Updo or veil pulled back — go long (45 mm+ chandeliers) since the ear is fully exposed. Loose hair or half-up — stay medium (25–35 mm drops) so the piece still reads through the hair. Match the metal and stone family across all four pieces or the parure won't read as a set.",
       },
     ],
     chart: [
@@ -407,7 +513,6 @@ const GUIDES = {
 export default function SizeGuide({ category, onClose }) {
   const guide = GUIDES[category] ?? GUIDES.Rings;
   const Diagram = guide.diagram;
-  // 1-indexed step; null means no bubble is open.
   const [activeStep, setActiveStep] = useState(1);
   const step = activeStep ? guide.steps[activeStep - 1] : null;
 
@@ -437,18 +542,14 @@ export default function SizeGuide({ category, onClose }) {
           onStepClick={(n) => setActiveStep((prev) => (prev === n ? null : n))}
         />
         <div className="mt-2 text-center text-[10px] uppercase tracking-[0.25em] text-foreground/60">
-          Tap a number to read the step
+          Tap a number to read that step
         </div>
       </div>
 
-      {/* Step bubble — sits below the diagram, arabesque-styled */}
-      <div
-        key={activeStep ?? "empty"}
-        className="mt-4 animate-fade-in"
-      >
+      {/* Step bubble */}
+      <div key={activeStep ?? "empty"} className="mt-4 animate-fade-in">
         {step ? (
           <div className="relative neo-sm rounded-2xl px-5 py-4 border border-primary/20">
-            {/* little tail pointing up to the diagram */}
             <div className="absolute -top-2 left-8 size-4 rotate-45 bg-background border-l border-t border-primary/20" />
             <div className="flex items-start gap-3">
               <span className="shrink-0 size-7 rounded-full bg-primary text-primary-foreground inline-flex items-center justify-center text-[11px] font-bold">
