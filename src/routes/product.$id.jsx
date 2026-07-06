@@ -1,16 +1,21 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw } from "lucide-react";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw, Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import SouqBag from "@/components/SouqBag";
 import { findProductById, sizeGuides, products } from "@/lib/products";
+import { loadCustomProducts, findCustomProduct, removeCustomProduct, useCustomProducts } from "@/lib/custom-products";
 import { addToBag, useFavorites, toggleFavorite } from "@/lib/store";
 import { ProductCard } from "@/components/Products";
 import SizeGuide from "@/components/SizeGuide";
 import { trackProductEvent } from "@/lib/track";
+import { useRole } from "@/lib/use-role";
+import { useAdminMode } from "@/lib/admin-mode";
+import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
