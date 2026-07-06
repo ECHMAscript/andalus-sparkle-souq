@@ -311,7 +311,7 @@ function AddProductPage() {
                 disabled={!canPublish}
                 className="btn-gold flex-1 py-3.5 text-xs uppercase tracking-widest font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Publish to {category}
+                {publishing ? "Publishing…" : `Publish to ${category}`}
               </button>
               <Link
                 to="/category/$category"
