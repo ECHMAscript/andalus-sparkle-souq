@@ -1,9 +1,13 @@
+// @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Search, User, Heart, Menu, X, LogOut } from "lucide-react";
+import { Search, User, Heart, Menu, X, LogOut, Plus, Pencil, Check, Trash2, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
-import { products, categoryTiles } from "@/lib/products";
+import { useRole } from "@/lib/use-role";
+import { useAdminMode, toggleAdminMode } from "@/lib/admin-mode";
+import { useNavItems } from "@/lib/use-nav-items";
+import { products } from "@/lib/products";
 import {
   useFavorites,
   useBagCount,
@@ -11,15 +15,8 @@ import {
   setMobileNavOpen,
   toggleMobileNav,
 } from "@/lib/store";
+import { toast } from "sonner";
 import SouqBag from "@/components/SouqBag";
-
-const links = [
-  { label: "New Arrivals", to: "/" },
-  ...categoryTiles.map((c) => ({ label: c.name, to: "/category/$category", params: { category: c.name.toLowerCase() } })),
-  { label: "Crafting", to: "/crafting" },
-  { label: "Sale", to: "/sale" },
-
-];
 
 function SearchBox({ className = "" }) {
   const [q, setQ] = useState("");
@@ -30,11 +27,7 @@ function SearchBox({ className = "" }) {
     const term = q.trim().toLowerCase();
     if (!term) return [];
     return products
-      .filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          p.category.toLowerCase().includes(term),
-      )
+      .filter((p) => p.name.toLowerCase().includes(term) || p.category.toLowerCase().includes(term))
       .slice(0, 6);
   }, [q]);
 
@@ -52,10 +45,7 @@ function SearchBox({ className = "" }) {
         <Search className="size-4 text-muted-foreground shrink-0" />
         <input
           value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setOpen(true);
-          }}
+          onChange={(e) => { setQ(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           placeholder="Search rings, necklaces, bridal sets…"
           className="bg-transparent flex-1 text-sm outline-none placeholder:text-muted-foreground min-w-0"
@@ -78,10 +68,7 @@ function SearchBox({ className = "" }) {
                   <Link
                     to="/product/$id"
                     params={{ id: p.id }}
-                    onClick={() => {
-                      setOpen(false);
-                      setQ("");
-                    }}
+                    onClick={() => { setOpen(false); setQ(""); }}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-muted/60 transition-colors text-left"
                   >
                     <div className="size-12 rounded-lg overflow-hidden neo-sm shrink-0">
@@ -103,12 +90,98 @@ function SearchBox({ className = "" }) {
   );
 }
 
+// A single nav link. In admin mode it becomes editable in place.
+function NavLinkItem({ item, editing, onSaved, onDeleted }) {
+  const [label, setLabel] = useState(item.label);
+  const [path, setPath] = useState(item.path);
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    const trimmed = label.trim();
+    const p = path.trim();
+    if (!trimmed || !p) { toast.error("Label and path are required"); return; }
+    setSaving(true);
+    const { error } = await supabase
+      .from("nav_items")
+      .update({ label: trimmed, path: p })
+      .eq("id", item.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Saved");
+    onSaved?.();
+  }
+
+  async function remove() {
+    if (!confirm(`Remove "${item.label}" from the nav?`)) return;
+    const { error } = await supabase.from("nav_items").delete().eq("id", item.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Removed");
+    onDeleted?.();
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1 neo-inset rounded-full pl-3 pr-1 py-1">
+        <input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          className="bg-transparent text-xs uppercase tracking-[0.15em] w-24 outline-none"
+          placeholder="Label"
+        />
+        <span className="text-muted-foreground text-[10px]">→</span>
+        <input
+          value={path}
+          onChange={(e) => setPath(e.target.value)}
+          className="bg-transparent text-xs w-32 outline-none"
+          placeholder="/path"
+        />
+        <button onClick={save} disabled={saving} aria-label="Save" className="neo-sm p-1.5 text-primary">
+          <Check className="size-3.5" />
+        </button>
+        <button onClick={remove} aria-label="Delete" className="neo-sm p-1.5 text-destructive">
+          <Trash2 className="size-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      to={item.path}
+      className="px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-foreground/70 hover:text-primary transition-colors"
+    >
+      {item.label}
+    </Link>
+  );
+}
+
 export default function Navbar() {
   const favs = useFavorites();
   const favCount = favs.length;
   const bagCount = useBagCount();
   const navOpen = useMobileNavOpen();
   const { user } = useAuth();
+  const { isAdmin } = useRole();
+  const adminMode = useAdminMode();
+  const { items: navItems, refresh } = useNavItems();
+  const [editing, setEditing] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [newLabel, setNewLabel] = useState("");
+  const [newPath, setNewPath] = useState("/");
+
+  const editable = isAdmin && adminMode;
+
+  async function addItem() {
+    const label = newLabel.trim();
+    const path = newPath.trim();
+    if (!label || !path) { toast.error("Label and path required"); return; }
+    const sort_order = (navItems[navItems.length - 1]?.sort_order ?? 0) + 1;
+    const { error } = await supabase.from("nav_items").insert({ label, path, sort_order });
+    if (error) { toast.error(error.message); return; }
+    toast.success("Added");
+    setAdding(false); setNewLabel(""); setNewPath("/");
+    refresh();
+  }
 
   return (
     <>
@@ -123,19 +196,37 @@ export default function Navbar() {
             Complimentary shipping worldwide on orders over € 500
           </span>
           <div className="flex items-center gap-2 shrink-0">
-            <Link
-              to="/auth"
-              className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full neo-sm hover:bg-muted/60 transition-colors"
-            >
-              Log In
-            </Link>
-            <Link
-              to="/auth"
-              className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full neo-pressable text-white transition-all"
-              style={{ background: "linear-gradient(135deg, oklch(0.55 0.14 75), oklch(0.45 0.12 65))" }}
-            >
-              Register
-            </Link>
+            {isAdmin && (
+              <button
+                onClick={toggleAdminMode}
+                className={`text-[10px] sm:text-[11px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 transition-all ${
+                  adminMode ? "neo-pressable text-white" : "neo-sm text-foreground/80 hover:text-foreground"
+                }`}
+                style={adminMode ? { background: "linear-gradient(135deg, oklch(0.55 0.14 75), oklch(0.35 0.10 60))" } : undefined}
+                title="Toggle admin mode"
+              >
+                <ShieldCheck className="size-3" />
+                {adminMode ? "Admin On" : "Admin Off"}
+              </button>
+            )}
+            {user ? (
+              <Link to="/account/settings" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full neo-sm hover:bg-muted/60 transition-colors">
+                My Account
+              </Link>
+            ) : (
+              <>
+                <Link to="/auth" className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full neo-sm hover:bg-muted/60 transition-colors">
+                  Log In
+                </Link>
+                <Link
+                  to="/auth"
+                  className="text-[10px] sm:text-[11px] uppercase tracking-[0.15em] px-3 py-1.5 rounded-full neo-pressable text-white transition-all"
+                  style={{ background: "linear-gradient(135deg, oklch(0.55 0.14 75), oklch(0.45 0.12 65))" }}
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -217,17 +308,60 @@ export default function Navbar() {
           <SearchBox />
         </div>
 
-        <nav className="hidden lg:flex justify-center gap-1 pb-3 border-t border-border/40 pt-3">
-          {links.map((l) => (
-            <Link
-              key={l.label}
-              to={l.to}
-              params={l.params}
-              className="px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-foreground/70 hover:text-primary transition-colors"
-            >
-              {l.label}
-            </Link>
+        <nav className="hidden lg:flex justify-center items-center flex-wrap gap-1 pb-3 border-t border-border/40 pt-3 px-4">
+          {navItems.map((item) => (
+            <NavLinkItem
+              key={item.id}
+              item={item}
+              editing={editable && editing}
+              onSaved={refresh}
+              onDeleted={refresh}
+            />
           ))}
+
+          {editable && adding && (
+            <div className="flex items-center gap-1 neo-inset rounded-full pl-3 pr-1 py-1">
+              <input
+                autoFocus
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                placeholder="Label"
+                className="bg-transparent text-xs uppercase tracking-[0.15em] w-24 outline-none"
+              />
+              <span className="text-muted-foreground text-[10px]">→</span>
+              <input
+                value={newPath}
+                onChange={(e) => setNewPath(e.target.value)}
+                placeholder="/path"
+                className="bg-transparent text-xs w-32 outline-none"
+              />
+              <button onClick={addItem} aria-label="Save" className="neo-sm p-1.5 text-primary"><Check className="size-3.5" /></button>
+              <button onClick={() => setAdding(false)} aria-label="Cancel" className="neo-sm p-1.5"><X className="size-3.5" /></button>
+            </div>
+          )}
+
+          {editable && (
+            <div className="flex items-center gap-1 ml-2 pl-2 border-l border-border/40">
+              <button
+                onClick={() => setEditing((v) => !v)}
+                aria-label={editing ? "Stop editing" : "Edit nav"}
+                className={`neo-sm p-1.5 ${editing ? "text-primary" : ""}`}
+                title={editing ? "Done" : "Edit nav items"}
+              >
+                {editing ? <Check className="size-3.5" /> : <Pencil className="size-3.5" />}
+              </button>
+              {!adding && (
+                <button
+                  onClick={() => setAdding(true)}
+                  aria-label="Add nav item"
+                  className="neo-sm p-1.5 text-primary"
+                  title="Add a new nav item"
+                >
+                  <Plus className="size-3.5" />
+                </button>
+              )}
+            </div>
+          )}
         </nav>
       </header>
 
@@ -254,15 +388,14 @@ export default function Navbar() {
           </button>
         </div>
         <nav className="p-3 flex flex-col">
-          {links.map((l) => (
+          {navItems.map((item) => (
             <Link
-              key={l.label}
-              to={l.to}
-              params={l.params}
+              key={item.id}
+              to={item.path}
               onClick={() => setMobileNavOpen(false)}
               className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-foreground/80 hover:bg-muted rounded-lg transition-colors"
             >
-              {l.label}
+              {item.label}
             </Link>
           ))}
           <div className="border-t border-border/60 my-3" />

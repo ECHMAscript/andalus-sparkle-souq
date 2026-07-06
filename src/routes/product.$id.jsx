@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -10,6 +10,7 @@ import { findProductById, sizeGuides, products } from "@/lib/products";
 import { addToBag, useFavorites, toggleFavorite } from "@/lib/store";
 import { ProductCard } from "@/components/Products";
 import SizeGuide from "@/components/SizeGuide";
+import { trackProductEvent } from "@/lib/track";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -115,9 +116,24 @@ function ProductPage() {
   const handleAdd = () => {
     if (!canAdd) return;
     addToBag({ id: p.id, size: finalSize, qty });
+    trackProductEvent({ productId: p.id, productName: p.name, eventType: "cart" });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
+
+  const handleFavorite = () => {
+    const wasFav = favored;
+    toggleFavorite(p.id);
+    if (!wasFav) trackProductEvent({ productId: p.id, productName: p.name, eventType: "favorite" });
+  };
+
+  // Track a "view" event once the user dwells on the product for 10+ seconds.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      trackProductEvent({ productId: p.id, productName: p.name, eventType: "view" });
+    }, 10_000);
+    return () => clearTimeout(timer);
+  }, [p.id, p.name]);
 
   const related = useMemo(
     () => products.filter((x) => x.category === p.category && x.id !== p.id).slice(0, 4),
@@ -292,7 +308,7 @@ function ProductPage() {
                   : "Add to Bag"}
               </button>
               <button
-                onClick={() => toggleFavorite(p.id)}
+                onClick={handleFavorite}
                 aria-label={favored ? "Remove from favorites" : "Add to favorites"}
                 className={`neo-pressable px-5 py-4 inline-flex items-center justify-center cursor-pointer ${
                   favored ? "text-destructive" : ""
