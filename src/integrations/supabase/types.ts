@@ -68,6 +68,72 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          images: Json
+          img: string | null
+          material: string | null
+          name: string
+          occasion: string | null
+          price: number
+          rating: number
+          reviews: number
+          sizes: Json
+          stock: number
+          style: string | null
+          tag: string | null
+          updated_at: string
+          was: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id: string
+          images?: Json
+          img?: string | null
+          material?: string | null
+          name: string
+          occasion?: string | null
+          price?: number
+          rating?: number
+          reviews?: number
+          sizes?: Json
+          stock?: number
+          style?: string | null
+          tag?: string | null
+          updated_at?: string
+          was?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          images?: Json
+          img?: string | null
+          material?: string | null
+          name?: string
+          occasion?: string | null
+          price?: number
+          rating?: number
+          reviews?: number
+          sizes?: Json
+          stock?: number
+          style?: string | null
+          tag?: string | null
+          updated_at?: string
+          was?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address_line1: string | null

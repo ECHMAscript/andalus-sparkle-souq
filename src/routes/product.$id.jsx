@@ -1,21 +1,32 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw } from "lucide-react";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw, Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import SouqBag from "@/components/SouqBag";
 import { findProductById, sizeGuides, products } from "@/lib/products";
+import { loadCustomProducts, findCustomProduct, removeCustomProduct, useCustomProducts } from "@/lib/custom-products";
 import { addToBag, useFavorites, toggleFavorite } from "@/lib/store";
 import { ProductCard } from "@/components/Products";
 import SizeGuide from "@/components/SizeGuide";
 import { trackProductEvent } from "@/lib/track";
+import { useRole } from "@/lib/use-role";
+import { useAdminMode } from "@/lib/admin-mode";
+import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
-  loader: ({ params }) => {
-    const p = findProductById(params.id);
+  loader: async ({ params }) => {
+    // Static seed products resolve synchronously; admin-added ones live in
+    // the DB, so ensure that list is loaded before deciding on notFound.
+    let p = findProductById(params.id);
+    if (!p) {
+      await loadCustomProducts();
+      p = findCustomProduct(params.id);
+    }
     if (!p) throw notFound();
     return { product: p };
   },
@@ -26,6 +37,7 @@ export const Route = createFileRoute("/product/$id")({
       { property: "og:image", content: loaderData?.product?.img ?? "" },
     ],
   }),
+
   notFoundComponent: () => (
     <PageShell>
       <Navbar />
@@ -98,9 +110,20 @@ function ZoomImage({ src, alt }) {
 }
 
 function ProductPage() {
-  const { product: p } = Route.useLoaderData();
+  const { product: loaded } = Route.useLoaderData();
+  const navigate = useNavigate();
+  const { isAdmin } = useRole();
+  const adminMode = useAdminMode();
+  const custom = useCustomProducts();
+  // Prefer the reactive custom-products copy so edits/deletes flow through.
+  const p = useMemo(
+    () => custom.find((x) => x.id === loaded.id) ?? loaded,
+    [custom, loaded],
+  );
+  const isCustomPiece = !!custom.find((x) => x.id === p.id);
   const favs = useFavorites();
   const favored = favs.includes(p.id);
+  const [deleting, setDeleting] = useState(false);
 
   // Gallery: use p.images if provided; otherwise fall back to the main image
   // plus a few same-category siblings as placeholder alternate shots.
@@ -115,7 +138,12 @@ function ProductPage() {
   const [activeImg, setActiveImg] = useState(0);
   useEffect(() => setActiveImg(0), [p.id]);
 
-  const sizes = sizeGuides[p.category] ?? [];
+  // Admin-added pieces store their own sizes list on the product; seeded
+  // pieces fall back to the shared per-category size guide.
+  const sizes = (Array.isArray(p.sizes) && p.sizes.length > 0)
+    ? p.sizes
+    : (sizeGuides[p.category] ?? []);
+
   const [size, setSize] = useState(sizes[Math.floor(sizes.length / 2)] ?? "");
   const [customSize, setCustomSize] = useState("");
   const [isCustom, setIsCustom] = useState(false);
@@ -139,6 +167,28 @@ function ProductPage() {
     toggleFavorite(p.id);
     if (!wasFav) trackProductEvent({ productId: p.id, productName: p.name, eventType: "favorite" });
   };
+
+  const handleDelete = async () => {
+    if (!isCustomPiece) {
+      toast.error("Seeded pieces can't be deleted from the storefront.");
+      return;
+    }
+    const ok = typeof window !== "undefined"
+      ? window.confirm(`Delete "${p.name}" permanently? This cannot be undone.`)
+      : true;
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await removeCustomProduct(p.id);
+      toast.success(`${p.name} was removed from the store.`);
+      navigate({ to: "/category/$category", params: { category: p.category.toLowerCase() } });
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || "Couldn't delete the piece. Please try again.");
+      setDeleting(false);
+    }
+  };
+
 
   // Track a "view" event once the user dwells on the product for 10+ seconds.
   useEffect(() => {
@@ -213,7 +263,21 @@ function ProductPage() {
             <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
               {p.style} · {p.material}
             </div>
-            <h1 className="font-display text-3xl md:text-4xl leading-tight">{p.name}</h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="font-display text-3xl md:text-4xl leading-tight">{p.name}</h1>
+              {isAdmin && adminMode && isCustomPiece && (
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  aria-label={`Delete ${p.name} permanently`}
+                  className="neo-pressable shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-destructive disabled:opacity-50"
+                >
+                  <Trash2 className="size-3.5" />
+                  {deleting ? "Deleting…" : "Delete"}
+                </button>
+              )}
+            </div>
+
 
             <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">

@@ -13,6 +13,10 @@ export function useRole() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Wait for auth to settle before deciding on roles — otherwise the
+    // first pass sees user=null, sets loading=false with roles=[], and any
+    // downstream `if (!loading && !isAdmin)` redirect fires by mistake.
+    if (authLoading) return;
     let cancelled = false;
     async function load() {
       if (!user) { setRoles([]); setLoading(false); return; }
@@ -27,7 +31,8 @@ export function useRole() {
     }
     load();
     return () => { cancelled = true; };
-  }, [user?.id]);
+  }, [user?.id, authLoading]);
+
 
   return {
     roles,
