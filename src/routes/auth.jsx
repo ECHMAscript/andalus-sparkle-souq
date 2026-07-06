@@ -93,7 +93,7 @@ function AuthPage() {
     }
     setSubmitting(true);
     const { email, password, ...meta } = parsed.data;
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -103,8 +103,14 @@ function AuthPage() {
     });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Account created — welcome to the souq");
-    navigate({ to: "/account/settings" });
+    if (data.session) {
+      toast.success("Account created — welcome to the souq");
+      navigate({ to: "/account/settings" });
+    } else {
+      toast.success("Check your inbox to confirm your email before signing in.", { duration: 6000 });
+      setMode("login");
+      setLogin({ email, password: "" });
+    }
   }
 
   const inputCls = "bg-transparent flex-1 text-sm outline-none placeholder:text-muted-foreground min-w-0";
