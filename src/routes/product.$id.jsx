@@ -19,8 +19,14 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
-  loader: ({ params }) => {
-    const p = findProductById(params.id);
+  loader: async ({ params }) => {
+    // Static seed products resolve synchronously; admin-added ones live in
+    // the DB, so ensure that list is loaded before deciding on notFound.
+    let p = findProductById(params.id);
+    if (!p) {
+      await loadCustomProducts();
+      p = findCustomProduct(params.id);
+    }
     if (!p) throw notFound();
     return { product: p };
   },
@@ -31,6 +37,7 @@ export const Route = createFileRoute("/product/$id")({
       { property: "og:image", content: loaderData?.product?.img ?? "" },
     ],
   }),
+
   notFoundComponent: () => (
     <PageShell>
       <Navbar />
