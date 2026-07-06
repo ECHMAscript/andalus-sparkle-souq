@@ -42,7 +42,7 @@ export const Route = createFileRoute("/product/$id")({
 
 // Real magnifying-glass: the lens itself shows an enlarged crop of the
 // image, positioned to follow the cursor — exactly like a physical loupe.
-function ZoomImage({ src, alt, thumbnails, activeIndex, onSelect }) {
+function ZoomImage({ src, alt }) {
   const wrapRef = useRef(null);
   const [pos, setPos] = useState({ x: 50, y: 50 });
   const [size, setSize] = useState({ w: 0, h: 0 });
