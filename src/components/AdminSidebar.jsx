@@ -1,13 +1,15 @@
 // @ts-nocheck
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BarChart3, PackageSearch, Wrench, X, ShieldCheck } from "lucide-react";
+import { BarChart3, PackageSearch, Wrench, X, ShieldCheck, PlusCircle } from "lucide-react";
 import { useAdminMode, useAdminSidebarOpen, setAdminSidebarOpen, toggleAdminSidebar } from "@/lib/admin-mode";
 import { useRole } from "@/lib/use-role";
 
 const tools = [
   { to: "/admin/stats", label: "Hot Items", icon: BarChart3, desc: "Statistics & interest graph" },
   { to: "/admin/items", label: "Item Lookup", icon: PackageSearch, desc: "Find products by name or ID" },
+  { to: "/admin/products/new", label: "Add Product", icon: PlusCircle, desc: "Publish a new piece to the catalog" },
 ];
+
 
 export default function AdminSidebar() {
   const { isAdmin } = useRole();

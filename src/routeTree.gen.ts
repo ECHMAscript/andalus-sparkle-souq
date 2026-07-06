@@ -22,6 +22,7 @@ import { Route as CategoryCategoryRouteImport } from './routes/category.$categor
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminItemsRouteImport } from './routes/admin.items'
 import { Route as AccountSettingsRouteImport } from './routes/account.settings'
+import { Route as AdminProductsNewRouteImport } from './routes/admin.products.new'
 
 const SignupSuccessRoute = SignupSuccessRouteImport.update({
   id: '/signup-success',
@@ -88,6 +89,11 @@ const AccountSettingsRoute = AccountSettingsRouteImport.update({
   path: '/account/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
+  id: '/admin/products/new',
+  path: '/admin/products/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
+    | '/admin/products/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
+    | '/admin/products/new'
   id:
     | '__root__'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
+    | '/admin/products/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +209,7 @@ export interface RootRouteChildren {
   AdminStatsRoute: typeof AdminStatsRoute
   CategoryCategoryRoute: typeof CategoryCategoryRoute
   ProductIdRoute: typeof ProductIdRoute
+  AdminProductsNewRoute: typeof AdminProductsNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/products/new': {
+      id: '/admin/products/new'
+      path: '/admin/products/new'
+      fullPath: '/admin/products/new'
+      preLoaderRoute: typeof AdminProductsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,6 +329,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminStatsRoute: AdminStatsRoute,
   CategoryCategoryRoute: CategoryCategoryRoute,
   ProductIdRoute: ProductIdRoute,
+  AdminProductsNewRoute: AdminProductsNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

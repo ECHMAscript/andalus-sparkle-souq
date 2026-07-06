@@ -52,12 +52,20 @@ export const filterOptions = {
   Occasion: ["Everyday", "Evening", "Bridal", "Statement"],
 };
 
+import { getCustomProducts, findCustomProduct } from "@/lib/custom-products";
+
+export function getAllProducts() {
+  return [...getCustomProducts(), ...products];
+}
+
 export function findProductById(id) {
-  return products.find((p) => p.id === id);
+  return findCustomProduct(id) ?? products.find((p) => p.id === id);
 }
 
 export function productsByCategory(category) {
-  if (!category || category === "All") return products;
+  const all = getAllProducts();
+  if (!category || category === "All") return all;
   const norm = category.toLowerCase();
-  return products.filter((p) => p.category.toLowerCase() === norm);
+  return all.filter((p) => p.category.toLowerCase() === norm);
 }
+
