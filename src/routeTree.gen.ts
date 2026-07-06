@@ -84,12 +84,6 @@ const AdminItemsRoute = AdminItemsRouteImport.update({
   path: '/admin/items',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
-  id: '/admin/products/new',
-  path: '/admin/products/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-
 const AccountSettingsRoute = AccountSettingsRouteImport.update({
   id: '/account/settings',
   path: '/account/settings',
