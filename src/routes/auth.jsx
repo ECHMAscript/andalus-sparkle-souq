@@ -97,21 +97,20 @@ function AuthPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/signup-success?email=${encodeURIComponent(email)}`,
         data: meta,
       },
     });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
+    // With email confirmation required, session is null. If a session exists (auto-confirm on),
+    // sign out so the user must still verify before logging in.
     if (data.session) {
-      toast.success("Account created — welcome to the souq");
-      navigate({ to: "/account/settings" });
-    } else {
-      toast.success("Check your inbox to confirm your email before signing in.", { duration: 6000 });
-      setMode("login");
-      setLogin({ email, password: "" });
+      await supabase.auth.signOut();
     }
+    navigate({ to: "/signup-success", search: { email } });
   }
+
 
   const inputCls = "bg-transparent flex-1 text-sm outline-none placeholder:text-muted-foreground min-w-0";
 
