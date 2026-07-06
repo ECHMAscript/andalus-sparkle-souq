@@ -50,18 +50,62 @@ const loginSchema = z.object({
 });
 
 
-function Field({ icon: Icon, label, error, children }) {
+function Field({ icon: Icon, label, error, hint, status, children }) {
+  const errored = !!error;
+  const ok = status === "ok";
+  const checking = status === "checking";
   return (
     <label className="block">
       <span className="block text-[11px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5">{label}</span>
-      <div className={`neo-inset flex items-center gap-2 px-4 py-2.5 rounded-xl ${error ? "ring-1 ring-destructive/50" : ""}`}>
-        {Icon ? <Icon className="size-4 text-muted-foreground shrink-0" /> : null}
+      <div
+        className={`neo-inset flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors ${
+          errored ? "border border-destructive ring-1 ring-destructive/60" : "border border-transparent"
+        }`}
+      >
+        {Icon ? <Icon className={`size-4 shrink-0 ${errored ? "text-destructive" : "text-muted-foreground"}`} /> : null}
         {children}
+        {checking && <Loader2 className="size-3.5 animate-spin text-muted-foreground shrink-0" />}
+        {ok && !errored && <Check className="size-4 text-emerald-500 shrink-0" />}
+        {errored && <X className="size-4 text-destructive shrink-0" />}
       </div>
-      {error && <span className="block text-xs text-destructive mt-1">{error}</span>}
+      {error ? (
+        <span className="block text-xs text-destructive mt-1">{error}</span>
+      ) : hint ? (
+        <span className="block text-xs text-muted-foreground mt-1">{hint}</span>
+      ) : null}
     </label>
   );
 }
+
+function useAvailability(value, rpc, minLen = 3) {
+  const [state, setState] = useState({ status: "idle", error: null });
+  const timer = useRef();
+  useEffect(() => {
+    clearTimeout(timer.current);
+    const v = (value || "").trim();
+    if (v.length < minLen) { setState({ status: "idle", error: null }); return; }
+    setState({ status: "checking", error: null });
+    timer.current = setTimeout(async () => {
+      const { data, error } = await supabase.rpc(rpc, rpc === "check_username_available" ? { _username: v } : { _email: v });
+      if (error) { setState({ status: "idle", error: null }); return; }
+      setState(data ? { status: "ok", error: null } : { status: "taken", error: rpc === "check_username_available" ? "Username already taken" : "Email already registered" });
+    }, 400);
+    return () => clearTimeout(timer.current);
+  }, [value, rpc, minLen]);
+  return state;
+}
+
+function validateField(field, value, all) {
+  try {
+    const shape = { username: usernameRule, password: passwordRule, email: signupSchema.shape.email }[field];
+    if (!shape) return null;
+    shape.parse(value);
+    return null;
+  } catch (err) {
+    return err?.issues?.[0]?.message || "Invalid value";
+  }
+}
+
 
 function AuthPage() {
   const navigate = useNavigate();
