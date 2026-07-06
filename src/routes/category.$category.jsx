@@ -1,13 +1,17 @@
 // @ts-nocheck
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, SlidersHorizontal, X, Plus } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import { ProductCard } from "@/components/Products";
 import { products, categoryTiles, filterOptions } from "@/lib/products";
+import { useCustomProducts } from "@/lib/custom-products";
 import { useFavorites } from "@/lib/store";
+import { useRole } from "@/lib/use-role";
+import { useAdminMode } from "@/lib/admin-mode";
+
 
 export const Route = createFileRoute("/category/$category")({
   component: CategoryPage,
