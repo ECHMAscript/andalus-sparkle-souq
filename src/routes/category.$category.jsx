@@ -96,11 +96,15 @@ function FilterGroup({ title, options, selected, onToggle }) {
 function CategoryPage() {
   const { categoryName, blurb } = Route.useLoaderData();
   const favs = useFavorites();
+  const custom = useCustomProducts();
+  const { isAdmin } = useRole();
+  const adminMode = useAdminMode();
 
   const base = useMemo(
-    () => products.filter((p) => p.category === categoryName),
-    [categoryName],
+    () => [...custom, ...products].filter((p) => p.category === categoryName),
+    [categoryName, custom],
   );
+
 
   const [styleSel, setStyleSel] = useState([]);
   const [materialSel, setMaterialSel] = useState([]);
