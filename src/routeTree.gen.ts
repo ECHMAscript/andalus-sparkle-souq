@@ -21,9 +21,7 @@ import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategoryCategoryRouteImport } from './routes/category.$category'
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminItemsRouteImport } from './routes/admin.items'
-import { Route as AdminProductsNewRouteImport } from './routes/admin.products.new'
 import { Route as AccountSettingsRouteImport } from './routes/account.settings'
-
 import { Route as AdminProductsNewRouteImport } from './routes/admin.products.new'
 
 const SignupSuccessRoute = SignupSuccessRouteImport.update({
@@ -86,6 +84,12 @@ const AdminItemsRoute = AdminItemsRouteImport.update({
   path: '/admin/items',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
+  id: '/admin/products/new',
+  path: '/admin/products/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+
 const AccountSettingsRoute = AccountSettingsRouteImport.update({
   id: '/account/settings',
   path: '/account/settings',
