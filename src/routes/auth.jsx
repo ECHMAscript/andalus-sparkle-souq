@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
-import { Loader2, User, Lock, Mail, MapPin, Phone, Sparkles } from "lucide-react";
+import { Loader2, User, Lock, Mail, MapPin, Phone, Sparkles, Check, X } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -19,10 +19,21 @@ export const Route = createFileRoute("/auth")({
   }),
 });
 
+const usernameRule = z.string().trim()
+  .min(5, "Username must be at least 5 characters")
+  .max(40, "Username must be less than 40 characters")
+  .regex(/[0-9]/, "Username must contain at least one number");
+
+const passwordRule = z.string()
+  .min(9, "Password must be over 8 characters")
+  .max(72, "Password must be less than 72 characters")
+  .regex(/[A-Z]/, "Password must contain a capital letter")
+  .regex(/[^A-Za-z0-9]/, "Password must contain a symbol (e.g. ! @ = -)");
+
 const signupSchema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
-  password: z.string().min(8, "Password must be at least 8 characters").max(72),
-  username: z.string().trim().min(3, "Username must be at least 3 characters").max(40),
+  password: passwordRule,
+  username: usernameRule,
   full_name: z.string().trim().min(2, "Enter your full name").max(120),
   phone: z.string().trim().max(40).optional().or(z.literal("")),
   address_line1: z.string().trim().min(2, "Street address is required").max(200),
@@ -37,6 +48,7 @@ const loginSchema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
   password: z.string().min(1, "Enter your password").max(72),
 });
+
 
 function Field({ icon: Icon, label, error, children }) {
   return (
