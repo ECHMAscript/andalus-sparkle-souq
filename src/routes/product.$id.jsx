@@ -110,9 +110,20 @@ function ZoomImage({ src, alt }) {
 }
 
 function ProductPage() {
-  const { product: p } = Route.useLoaderData();
+  const { product: loaded } = Route.useLoaderData();
+  const navigate = useNavigate();
+  const { isAdmin } = useRole();
+  const adminMode = useAdminMode();
+  const custom = useCustomProducts();
+  // Prefer the reactive custom-products copy so edits/deletes flow through.
+  const p = useMemo(
+    () => custom.find((x) => x.id === loaded.id) ?? loaded,
+    [custom, loaded],
+  );
+  const isCustomPiece = !!custom.find((x) => x.id === p.id);
   const favs = useFavorites();
   const favored = favs.includes(p.id);
+  const [deleting, setDeleting] = useState(false);
 
   // Gallery: use p.images if provided; otherwise fall back to the main image
   // plus a few same-category siblings as placeholder alternate shots.
@@ -127,7 +138,12 @@ function ProductPage() {
   const [activeImg, setActiveImg] = useState(0);
   useEffect(() => setActiveImg(0), [p.id]);
 
-  const sizes = sizeGuides[p.category] ?? [];
+  // Admin-added pieces store their own sizes list on the product; seeded
+  // pieces fall back to the shared per-category size guide.
+  const sizes = (Array.isArray(p.sizes) && p.sizes.length > 0)
+    ? p.sizes
+    : (sizeGuides[p.category] ?? []);
+
   const [size, setSize] = useState(sizes[Math.floor(sizes.length / 2)] ?? "");
   const [customSize, setCustomSize] = useState("");
   const [isCustom, setIsCustom] = useState(false);
