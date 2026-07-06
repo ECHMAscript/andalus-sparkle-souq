@@ -170,7 +170,34 @@ function ProductPage() {
         {/* Row on lg+; column on smaller screens, image on top */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           <div>
-            <ZoomImage src={p.img} alt={p.name} />
+            <ZoomImage src={gallery[activeImg] ?? p.img} alt={p.name} />
+            {gallery.length > 1 && (
+              <div className="mt-4 grid grid-cols-4 gap-2 sm:gap-3">
+                {gallery.map((src, i) => {
+                  const isActive = i === activeImg;
+                  return (
+                    <button
+                      key={`${src}-${i}`}
+                      onClick={() => setActiveImg(i)}
+                      aria-label={`View image ${i + 1} of ${p.name}`}
+                      aria-current={isActive}
+                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${
+                        isActive
+                          ? "ring-2 ring-primary ring-offset-2 ring-offset-background -translate-y-0.5"
+                          : "neo-sm hover:-translate-y-0.5 opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={src}
+                        alt={`${p.name} view ${i + 1}`}
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <p className="hidden md:block text-[11px] uppercase tracking-[0.25em] text-muted-foreground mt-3 text-center">
               Hover the image to zoom in
             </p>
