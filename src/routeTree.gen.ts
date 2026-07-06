@@ -18,6 +18,8 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategoryCategoryRouteImport } from './routes/category.$category'
+import { Route as AdminStatsRouteImport } from './routes/admin.stats'
+import { Route as AdminItemsRouteImport } from './routes/admin.items'
 import { Route as AccountSettingsRouteImport } from './routes/account.settings'
 
 const SaleRoute = SaleRouteImport.update({
@@ -65,6 +67,16 @@ const CategoryCategoryRoute = CategoryCategoryRouteImport.update({
   path: '/category/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStatsRoute = AdminStatsRouteImport.update({
+  id: '/admin/stats',
+  path: '/admin/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminItemsRoute = AdminItemsRouteImport.update({
+  id: '/admin/items',
+  path: '/admin/items',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountSettingsRoute = AccountSettingsRouteImport.update({
   id: '/account/settings',
   path: '/account/settings',
@@ -80,6 +92,8 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
   '/account/settings': typeof AccountSettingsRoute
+  '/admin/items': typeof AdminItemsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
 }
@@ -92,6 +106,8 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
   '/account/settings': typeof AccountSettingsRoute
+  '/admin/items': typeof AdminItemsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
 }
@@ -105,6 +121,8 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
   '/account/settings': typeof AccountSettingsRoute
+  '/admin/items': typeof AdminItemsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
 }
@@ -119,6 +137,8 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/sale'
     | '/account/settings'
+    | '/admin/items'
+    | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -131,6 +151,8 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/sale'
     | '/account/settings'
+    | '/admin/items'
+    | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
   id:
@@ -143,6 +165,8 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/sale'
     | '/account/settings'
+    | '/admin/items'
+    | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
   fileRoutesById: FileRoutesById
@@ -156,6 +180,8 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   SaleRoute: typeof SaleRoute
   AccountSettingsRoute: typeof AccountSettingsRoute
+  AdminItemsRoute: typeof AdminItemsRoute
+  AdminStatsRoute: typeof AdminStatsRoute
   CategoryCategoryRoute: typeof CategoryCategoryRoute
   ProductIdRoute: typeof ProductIdRoute
 }
@@ -225,6 +251,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoryCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/stats': {
+      id: '/admin/stats'
+      path: '/admin/stats'
+      fullPath: '/admin/stats'
+      preLoaderRoute: typeof AdminStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/items': {
+      id: '/admin/items'
+      path: '/admin/items'
+      fullPath: '/admin/items'
+      preLoaderRoute: typeof AdminItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/settings': {
       id: '/account/settings'
       path: '/account/settings'
@@ -244,6 +284,8 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   SaleRoute: SaleRoute,
   AccountSettingsRoute: AccountSettingsRoute,
+  AdminItemsRoute: AdminItemsRoute,
+  AdminStatsRoute: AdminStatsRoute,
   CategoryCategoryRoute: CategoryCategoryRoute,
   ProductIdRoute: ProductIdRoute,
 }
