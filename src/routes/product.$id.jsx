@@ -102,6 +102,19 @@ function ProductPage() {
   const favs = useFavorites();
   const favored = favs.includes(p.id);
 
+  // Gallery: use p.images if provided; otherwise fall back to the main image
+  // plus a few same-category siblings as placeholder alternate shots.
+  const gallery = useMemo(() => {
+    if (Array.isArray(p.images) && p.images.length > 0) return p.images;
+    const siblings = products
+      .filter((x) => x.category === p.category && x.id !== p.id)
+      .slice(0, 3)
+      .map((x) => x.img);
+    return [p.img, ...siblings];
+  }, [p]);
+  const [activeImg, setActiveImg] = useState(0);
+  useEffect(() => setActiveImg(0), [p.id]);
+
   const sizes = sizeGuides[p.category] ?? [];
   const [size, setSize] = useState(sizes[Math.floor(sizes.length / 2)] ?? "");
   const [customSize, setCustomSize] = useState("");
