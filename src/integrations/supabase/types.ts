@@ -142,6 +142,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_email_available: { Args: { _email: string }; Returns: boolean }
+      check_username_available: {
+        Args: { _username: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
