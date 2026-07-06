@@ -169,10 +169,26 @@ function CategoryPage() {
             <span className="mx-2">/</span>
             <span className="text-foreground">{categoryName}</span>
           </div>
-          <h1 className="font-display text-3xl sm:text-5xl">
-            <span className="italic text-gold-gradient">{categoryName}</span>
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2">{blurb}</p>
+          <div className="flex items-end justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="font-display text-3xl sm:text-5xl">
+                <span className="italic text-gold-gradient">{categoryName}</span>
+              </h1>
+              <p className="text-sm text-muted-foreground mt-2">{blurb}</p>
+            </div>
+            {isAdmin && adminMode && (
+              <Link
+                to="/admin/products/new"
+                search={{ category: categoryName }}
+                className="neo-pressable inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs uppercase tracking-widest font-semibold text-primary"
+                aria-label={`Add a new ${categoryName} product`}
+              >
+                <Plus className="size-4" />
+                Add {categoryName.replace(/s$/, "")}
+              </Link>
+            )}
+          </div>
+
         </div>
 
         {/* Toolbar — mobile filter trigger + sort */}
