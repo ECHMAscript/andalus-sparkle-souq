@@ -102,6 +102,19 @@ function ProductPage() {
   const favs = useFavorites();
   const favored = favs.includes(p.id);
 
+  // Gallery: use p.images if provided; otherwise fall back to the main image
+  // plus a few same-category siblings as placeholder alternate shots.
+  const gallery = useMemo(() => {
+    if (Array.isArray(p.images) && p.images.length > 0) return p.images;
+    const siblings = products
+      .filter((x) => x.category === p.category && x.id !== p.id)
+      .slice(0, 3)
+      .map((x) => x.img);
+    return [p.img, ...siblings];
+  }, [p]);
+  const [activeImg, setActiveImg] = useState(0);
+  useEffect(() => setActiveImg(0), [p.id]);
+
   const sizes = sizeGuides[p.category] ?? [];
   const [size, setSize] = useState(sizes[Math.floor(sizes.length / 2)] ?? "");
   const [customSize, setCustomSize] = useState("");
@@ -157,7 +170,34 @@ function ProductPage() {
         {/* Row on lg+; column on smaller screens, image on top */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           <div>
-            <ZoomImage src={p.img} alt={p.name} />
+            <ZoomImage src={gallery[activeImg] ?? p.img} alt={p.name} />
+            {gallery.length > 1 && (
+              <div className="mt-4 grid grid-cols-4 gap-2 sm:gap-3">
+                {gallery.map((src, i) => {
+                  const isActive = i === activeImg;
+                  return (
+                    <button
+                      key={`${src}-${i}`}
+                      onClick={() => setActiveImg(i)}
+                      aria-label={`View image ${i + 1} of ${p.name}`}
+                      aria-current={isActive}
+                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${
+                        isActive
+                          ? "ring-2 ring-primary ring-offset-2 ring-offset-background -translate-y-0.5"
+                          : "neo-sm hover:-translate-y-0.5 opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={src}
+                        alt={`${p.name} view ${i + 1}`}
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <p className="hidden md:block text-[11px] uppercase tracking-[0.25em] text-muted-foreground mt-3 text-center">
               Hover the image to zoom in
             </p>
