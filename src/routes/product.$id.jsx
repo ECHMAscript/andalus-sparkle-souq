@@ -168,6 +168,28 @@ function ProductPage() {
     if (!wasFav) trackProductEvent({ productId: p.id, productName: p.name, eventType: "favorite" });
   };
 
+  const handleDelete = async () => {
+    if (!isCustomPiece) {
+      toast.error("Seeded pieces can't be deleted from the storefront.");
+      return;
+    }
+    const ok = typeof window !== "undefined"
+      ? window.confirm(`Delete "${p.name}" permanently? This cannot be undone.`)
+      : true;
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await removeCustomProduct(p.id);
+      toast.success(`${p.name} was removed from the store.`);
+      navigate({ to: "/category/$category", params: { category: p.category.toLowerCase() } });
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || "Couldn't delete the piece. Please try again.");
+      setDeleting(false);
+    }
+  };
+
+
   // Track a "view" event once the user dwells on the product for 10+ seconds.
   useEffect(() => {
     const timer = setTimeout(() => {
