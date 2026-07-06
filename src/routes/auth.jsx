@@ -137,6 +137,22 @@ function AuthPage() {
     navigate({ to: "/account/settings" });
   }
 
+  // Live validation state for signup
+  const usernameAvail = useAvailability(mode === "signup" ? signup.username : "", "check_username_available", 5);
+  const emailAvail = useAvailability(mode === "signup" ? signup.email : "", "check_email_available", 5);
+
+  const localUsernameErr = signup.username ? validateField("username", signup.username) : null;
+  const localEmailErr = signup.email ? validateField("email", signup.email) : null;
+  const localPasswordErr = signup.password ? validateField("password", signup.password) : null;
+
+  const usernameError = errors.username || localUsernameErr || (usernameAvail.status === "taken" ? usernameAvail.error : null);
+  const emailError = errors.email || localEmailErr || (emailAvail.status === "taken" ? emailAvail.error : null);
+  const passwordError = errors.password || localPasswordErr;
+
+  const usernameStatus = localUsernameErr ? "error" : usernameAvail.status === "checking" ? "checking" : usernameAvail.status === "ok" ? "ok" : "idle";
+  const emailStatus = localEmailErr ? "error" : emailAvail.status === "checking" ? "checking" : emailAvail.status === "ok" ? "ok" : "idle";
+  const passwordStatus = signup.password ? (localPasswordErr ? "error" : "ok") : "idle";
+
   async function handleSignup(e) {
     e.preventDefault();
     setErrors({});
@@ -147,6 +163,8 @@ function AuthPage() {
       setErrors(fe);
       return;
     }
+    if (usernameAvail.status === "taken") { setErrors({ username: "Username already taken" }); return; }
+    if (emailAvail.status === "taken") { setErrors({ email: "Email already registered" }); return; }
     setSubmitting(true);
     const { email, password, ...meta } = parsed.data;
     const { data, error } = await supabase.auth.signUp({
@@ -158,9 +176,15 @@ function AuthPage() {
       },
     });
     setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
-    // With email confirmation required, session is null. If a session exists (auto-confirm on),
-    // sign out so the user must still verify before logging in.
+    if (error) {
+      const msg = (error.message || "").toLowerCase();
+      if (msg.includes("registered") || msg.includes("already")) {
+        setErrors({ email: "Email already registered" });
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
     if (data.session) {
       await supabase.auth.signOut();
     }
@@ -229,12 +253,14 @@ function AuthPage() {
                   </p>
                 </form>
               ) : (
-                <form onSubmit={handleSignup} className="space-y-4">
+                <form onSubmit={handleSignup} className="space-y-4" noValidate>
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <Field icon={User} label="Username" error={errors.username}>
+                    <Field icon={User} label="Username" error={usernameError}
+                      hint="At least 5 characters and must include a number"
+                      status={usernameStatus}>
                       <input className={inputCls} value={signup.username}
-                        onChange={(e) => setSignup({ ...signup, username: e.target.value })}
-                        placeholder="aisha_jewels" />
+                        onChange={(e) => { setErrors((p) => ({ ...p, username: undefined })); setSignup({ ...signup, username: e.target.value }); }}
+                        placeholder="aisha_jewels1" />
                     </Field>
                     <Field icon={User} label="Full Name" error={errors.full_name}>
                       <input autoComplete="name" className={inputCls} value={signup.full_name}
@@ -243,9 +269,9 @@ function AuthPage() {
                     </Field>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <Field icon={Mail} label="Email" error={errors.email}>
+                    <Field icon={Mail} label="Email" error={emailError} status={emailStatus}>
                       <input type="email" autoComplete="email" className={inputCls} value={signup.email}
-                        onChange={(e) => setSignup({ ...signup, email: e.target.value })}
+                        onChange={(e) => { setErrors((p) => ({ ...p, email: undefined })); setSignup({ ...signup, email: e.target.value }); }}
                         placeholder="you@example.com" />
                     </Field>
                     <Field icon={Phone} label="Phone (optional)" error={errors.phone}>
@@ -254,10 +280,13 @@ function AuthPage() {
                         placeholder="+971 5x xxx xxxx" />
                     </Field>
                   </div>
-                  <Field icon={Lock} label="Password" error={errors.password}>
+                  <Field icon={Lock} label="Password" error={passwordError}
+                    hint="Over 8 characters, one capital letter, and a symbol"
+                    status={passwordStatus}>
                     <input type="password" autoComplete="new-password" className={inputCls} value={signup.password}
-                      onChange={(e) => setSignup({ ...signup, password: e.target.value })}
-                      placeholder="At least 8 characters" />
+                      onChange={(e) => { setErrors((p) => ({ ...p, password: undefined })); setSignup({ ...signup, password: e.target.value }); }}
+                      placeholder="At least 9 characters" />
+
                   </Field>
 
                   <div className="pt-2">
