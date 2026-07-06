@@ -25,14 +25,37 @@ export const Route = createFileRoute("/admin/products/new")({
   }),
 });
 
+// Downscale uploads before we store them. Full-resolution phone photos
+// become multi-MB base64 strings that make the zoom lens re-decode a huge
+// bitmap on every mousemove — visible as heavy lag on the product page.
+// Re-encoding to a ~1400px JPEG at quality 0.85 keeps the piece looking
+// crisp while shrinking each image by 10–50×.
+const MAX_EDGE = 1400;
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = reject;
-    r.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const scale = Math.min(1, MAX_EDGE / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        // JPEG for photos — dramatically smaller than PNG for jewelry shots.
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
   });
 }
+
 
 function AddProductPage() {
   const navigate = useNavigate();
