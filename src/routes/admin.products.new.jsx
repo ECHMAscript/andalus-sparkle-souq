@@ -125,18 +125,27 @@ function AddProductPage() {
     };
   }, [name, category, style, material, price, mainImg, extraImgs, tag, description]);
 
-  const canPublish = mainImg && name.trim() && Number(price) > 0;
+  const [publishing, setPublishing] = useState(false);
+  const canPublish = mainImg && name.trim() && Number(price) > 0 && !publishing;
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     if (!canPublish) {
       toast.error("Please add an image, a name, and a price.");
       return;
     }
     const id = `${slugify(name)}-${Math.random().toString(36).slice(2, 6)}`;
-    addCustomProduct({ ...preview, id });
-    toast.success(`${preview.name} added to ${category}.`);
-    navigate({ to: "/category/$category", params: { category: category.toLowerCase() } });
+    setPublishing(true);
+    try {
+      await addCustomProduct({ ...preview, id, sizes });
+      toast.success(`${preview.name} added to ${category}.`);
+      navigate({ to: "/category/$category", params: { category: category.toLowerCase() } });
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || "Couldn't publish the piece. Please try again.");
+      setPublishing(false);
+    }
   };
+
 
   return (
     <PageShell>
