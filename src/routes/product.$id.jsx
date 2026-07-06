@@ -263,7 +263,21 @@ function ProductPage() {
             <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
               {p.style} · {p.material}
             </div>
-            <h1 className="font-display text-3xl md:text-4xl leading-tight">{p.name}</h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="font-display text-3xl md:text-4xl leading-tight">{p.name}</h1>
+              {isAdmin && adminMode && isCustomPiece && (
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  aria-label={`Delete ${p.name} permanently`}
+                  className="neo-pressable shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-destructive disabled:opacity-50"
+                >
+                  <Trash2 className="size-3.5" />
+                  {deleting ? "Deleting…" : "Delete"}
+                </button>
+              )}
+            </div>
+
 
             <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
