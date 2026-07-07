@@ -1,8 +1,13 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { products, categories } from "@/lib/products";
 import { useFavorites, toggleFavorite } from "@/lib/store";
+import { useCustomProducts, removeCustomProduct } from "@/lib/custom-products";
+import { useRole } from "@/lib/use-role";
+import { useAdminMode } from "@/lib/admin-mode";
+
 
 function ImageTag({ tag, stock }) {
   const badges = [];
@@ -33,11 +38,41 @@ function ImageTag({ tag, stock }) {
 }
 
 export function ProductCard({ p, favorited }) {
+  const { isAdmin } = useRole();
+  const adminMode = useAdminMode();
+  const custom = useCustomProducts();
+  const isCustomPiece = custom.some((x) => x.id === p.id);
+  const [deleting, setDeleting] = useState(false);
+  const canDelete = isAdmin && adminMode;
+
   const handleFav = (e) => {
     e.stopPropagation();
     e.preventDefault();
     toggleFavorite(p.id);
   };
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isCustomPiece) {
+      toast.error("Seeded pieces can't be deleted from the storefront.");
+      return;
+    }
+    const ok = typeof window !== "undefined"
+      ? window.confirm(`Delete "${p.name}" permanently? This cannot be undone.`)
+      : true;
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await removeCustomProduct(p.id);
+      toast.success(`${p.name} was removed from the store.`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || "Couldn't delete the piece. Please try again.");
+      setDeleting(false);
+    }
+  };
+
   return (
     <Link
       to="/product/$id"
@@ -67,6 +102,17 @@ export function ProductCard({ p, favorited }) {
         >
           <Heart className={`size-3.5 transition-colors ${favorited ? "text-white fill-white" : "text-foreground"}`} />
         </button>
+        {canDelete && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            aria-label={`Delete ${p.name} permanently`}
+            className="absolute top-3 right-14 p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+            style={{ boxShadow: "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)" }}
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        )}
         <span className="absolute bottom-3 left-3 right-3 btn-gold py-2.5 text-[10px] uppercase tracking-widest font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity">
           View Piece
         </span>
