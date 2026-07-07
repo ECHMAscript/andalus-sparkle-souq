@@ -8,6 +8,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import { Loader2, User, Lock, Mail, MapPin, Phone, Sparkles, Check, X } from "lucide-react";
+import { checkUsernameAvailable, checkEmailAvailable } from "@/lib/availability.functions";
+
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -77,7 +79,7 @@ function Field({ icon: Icon, label, error, hint, status, children }) {
   );
 }
 
-function useAvailability(value, rpc, minLen = 3) {
+function useAvailability(value, kind, minLen = 3) {
   const [state, setState] = useState({ status: "idle", error: null });
   const timer = useRef();
   useEffect(() => {
@@ -86,14 +88,22 @@ function useAvailability(value, rpc, minLen = 3) {
     if (v.length < minLen) { setState({ status: "idle", error: null }); return; }
     setState({ status: "checking", error: null });
     timer.current = setTimeout(async () => {
-      const { data, error } = await supabase.rpc(rpc, rpc === "check_username_available" ? { _username: v } : { _email: v });
-      if (error) { setState({ status: "idle", error: null }); return; }
-      setState(data ? { status: "ok", error: null } : { status: "taken", error: rpc === "check_username_available" ? "Username already taken" : "Email already registered" });
+      try {
+        const res = kind === "username"
+          ? await checkUsernameAvailable({ data: { username: v } })
+          : await checkEmailAvailable({ data: { email: v } });
+        setState(res.available
+          ? { status: "ok", error: null }
+          : { status: "taken", error: kind === "username" ? "Username already taken" : "Email already registered" });
+      } catch {
+        setState({ status: "idle", error: null });
+      }
     }, 400);
     return () => clearTimeout(timer.current);
-  }, [value, rpc, minLen]);
+  }, [value, kind, minLen]);
   return state;
 }
+
 
 function validateField(field, value, all) {
   try {
@@ -138,8 +148,9 @@ function AuthPage() {
   }
 
   // Live validation state for signup
-  const usernameAvail = useAvailability(mode === "signup" ? signup.username : "", "check_username_available", 5);
-  const emailAvail = useAvailability(mode === "signup" ? signup.email : "", "check_email_available", 5);
+  const usernameAvail = useAvailability(mode === "signup" ? signup.username : "", "username", 5);
+  const emailAvail = useAvailability(mode === "signup" ? signup.email : "", "email", 5);
+
 
   const localUsernameErr = signup.username ? validateField("username", signup.username) : null;
   const localEmailErr = signup.email ? validateField("email", signup.email) : null;
