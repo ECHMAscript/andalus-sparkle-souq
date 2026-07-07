@@ -4,7 +4,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import { products } from "@/lib/products";
+import { useCustomProducts } from "@/lib/custom-products";
 import { useFavorites, toggleFavorite } from "@/lib/store";
+
 
 export const Route = createFileRoute("/favorites")({
   component: FavoritesPage,
@@ -21,7 +23,9 @@ export const Route = createFileRoute("/favorites")({
 
 function FavoritesPage() {
   const favs = useFavorites();
-  const items = products.filter((p) => favs.includes(p.id));
+  const custom = useCustomProducts();
+  const items = [...custom, ...products].filter((p) => favs.includes(p.id));
+
 
   return (
     <PageShell>
