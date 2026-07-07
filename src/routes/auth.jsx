@@ -148,8 +148,9 @@ function AuthPage() {
   }
 
   // Live validation state for signup
-  const usernameAvail = useAvailability(mode === "signup" ? signup.username : "", "check_username_available", 5);
-  const emailAvail = useAvailability(mode === "signup" ? signup.email : "", "check_email_available", 5);
+  const usernameAvail = useAvailability(mode === "signup" ? signup.username : "", "username", 5);
+  const emailAvail = useAvailability(mode === "signup" ? signup.email : "", "email", 5);
+
 
   const localUsernameErr = signup.username ? validateField("username", signup.username) : null;
   const localEmailErr = signup.email ? validateField("email", signup.email) : null;
