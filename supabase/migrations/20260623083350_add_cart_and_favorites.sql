@@ -21,3 +21,6 @@ CREATE TABLE public.cart_items (
 );
 
 CREATE UNIQUE INDEX cart_items_user_product_size_inx ON public.cart_items(user_id, product_id, size)
+
+GRANT SELECT, INSERT, UPDATE, DELETE, ON public.favorites, public.cart_items TO authenticated;
+GRANT ALL ON public.favorites, public.cart_items TO service_role;
