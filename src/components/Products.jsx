@@ -134,6 +134,7 @@ export function ProductCard({ p, favorited }) {
   const custom = useCustomProducts();
   const isCustomPiece = custom.some((x) => x.id === p.id);
   const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const canDelete = isAdmin && adminMode;
 
   const handleFav = (e) => {
@@ -142,27 +143,30 @@ export function ProductCard({ p, favorited }) {
     toggleFavorite(p.id);
   };
 
-  const handleDelete = async (e) => {
+  const askDelete = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isCustomPiece) {
       toast.error("Seeded pieces can't be deleted from the storefront.");
       return;
     }
-    const ok = typeof window !== "undefined"
-      ? window.confirm(`Delete "${p.name}" permanently? This cannot be undone.`)
-      : true;
-    if (!ok) return;
+    setConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
     setDeleting(true);
     try {
       await removeCustomProduct(p.id);
       toast.success(`${p.name} was removed from the store.`);
+      setConfirmOpen(false);
     } catch (err) {
       console.error(err);
       toast.error(err?.message || "Couldn't delete the piece. Please try again.");
+    } finally {
       setDeleting(false);
     }
   };
+
 
   return (
     <Link
