@@ -38,11 +38,41 @@ function ImageTag({ tag, stock }) {
 }
 
 export function ProductCard({ p, favorited }) {
+  const { isAdmin } = useRole();
+  const adminMode = useAdminMode();
+  const custom = useCustomProducts();
+  const isCustomPiece = custom.some((x) => x.id === p.id);
+  const [deleting, setDeleting] = useState(false);
+  const canDelete = isAdmin && adminMode;
+
   const handleFav = (e) => {
     e.stopPropagation();
     e.preventDefault();
     toggleFavorite(p.id);
   };
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isCustomPiece) {
+      toast.error("Seeded pieces can't be deleted from the storefront.");
+      return;
+    }
+    const ok = typeof window !== "undefined"
+      ? window.confirm(`Delete "${p.name}" permanently? This cannot be undone.`)
+      : true;
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await removeCustomProduct(p.id);
+      toast.success(`${p.name} was removed from the store.`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || "Couldn't delete the piece. Please try again.");
+      setDeleting(false);
+    }
+  };
+
   return (
     <Link
       to="/product/$id"
