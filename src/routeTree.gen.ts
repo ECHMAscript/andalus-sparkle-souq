@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupSuccessRouteImport } from './routes/signup-success'
 import { Route as SaleRouteImport } from './routes/sale'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CraftingRouteImport } from './routes/crafting'
@@ -18,8 +19,16 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategoryCategoryRouteImport } from './routes/category.$category'
+import { Route as AdminStatsRouteImport } from './routes/admin.stats'
+import { Route as AdminItemsRouteImport } from './routes/admin.items'
 import { Route as AccountSettingsRouteImport } from './routes/account.settings'
+import { Route as AdminProductsNewRouteImport } from './routes/admin.products.new'
 
+const SignupSuccessRoute = SignupSuccessRouteImport.update({
+  id: '/signup-success',
+  path: '/signup-success',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SaleRoute = SaleRouteImport.update({
   id: '/sale',
   path: '/sale',
@@ -65,9 +74,24 @@ const CategoryCategoryRoute = CategoryCategoryRouteImport.update({
   path: '/category/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminStatsRoute = AdminStatsRouteImport.update({
+  id: '/admin/stats',
+  path: '/admin/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminItemsRoute = AdminItemsRouteImport.update({
+  id: '/admin/items',
+  path: '/admin/items',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountSettingsRoute = AccountSettingsRouteImport.update({
   id: '/account/settings',
   path: '/account/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProductsNewRoute = AdminProductsNewRouteImport.update({
+  id: '/admin/products/new',
+  path: '/admin/products/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -79,9 +103,13 @@ export interface FileRoutesByFullPath {
   '/crafting': typeof CraftingRoute
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
+  '/signup-success': typeof SignupSuccessRoute
   '/account/settings': typeof AccountSettingsRoute
+  '/admin/items': typeof AdminItemsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,9 +119,13 @@ export interface FileRoutesByTo {
   '/crafting': typeof CraftingRoute
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
+  '/signup-success': typeof SignupSuccessRoute
   '/account/settings': typeof AccountSettingsRoute
+  '/admin/items': typeof AdminItemsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,9 +136,13 @@ export interface FileRoutesById {
   '/crafting': typeof CraftingRoute
   '/favorites': typeof FavoritesRoute
   '/sale': typeof SaleRoute
+  '/signup-success': typeof SignupSuccessRoute
   '/account/settings': typeof AccountSettingsRoute
+  '/admin/items': typeof AdminItemsRoute
+  '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
+  '/admin/products/new': typeof AdminProductsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -118,9 +154,13 @@ export interface FileRouteTypes {
     | '/crafting'
     | '/favorites'
     | '/sale'
+    | '/signup-success'
     | '/account/settings'
+    | '/admin/items'
+    | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
+    | '/admin/products/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -130,9 +170,13 @@ export interface FileRouteTypes {
     | '/crafting'
     | '/favorites'
     | '/sale'
+    | '/signup-success'
     | '/account/settings'
+    | '/admin/items'
+    | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
+    | '/admin/products/new'
   id:
     | '__root__'
     | '/'
@@ -142,9 +186,13 @@ export interface FileRouteTypes {
     | '/crafting'
     | '/favorites'
     | '/sale'
+    | '/signup-success'
     | '/account/settings'
+    | '/admin/items'
+    | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
+    | '/admin/products/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -155,13 +203,24 @@ export interface RootRouteChildren {
   CraftingRoute: typeof CraftingRoute
   FavoritesRoute: typeof FavoritesRoute
   SaleRoute: typeof SaleRoute
+  SignupSuccessRoute: typeof SignupSuccessRoute
   AccountSettingsRoute: typeof AccountSettingsRoute
+  AdminItemsRoute: typeof AdminItemsRoute
+  AdminStatsRoute: typeof AdminStatsRoute
   CategoryCategoryRoute: typeof CategoryCategoryRoute
   ProductIdRoute: typeof ProductIdRoute
+  AdminProductsNewRoute: typeof AdminProductsNewRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup-success': {
+      id: '/signup-success'
+      path: '/signup-success'
+      fullPath: '/signup-success'
+      preLoaderRoute: typeof SignupSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sale': {
       id: '/sale'
       path: '/sale'
@@ -225,11 +284,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoryCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/stats': {
+      id: '/admin/stats'
+      path: '/admin/stats'
+      fullPath: '/admin/stats'
+      preLoaderRoute: typeof AdminStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/items': {
+      id: '/admin/items'
+      path: '/admin/items'
+      fullPath: '/admin/items'
+      preLoaderRoute: typeof AdminItemsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account/settings': {
       id: '/account/settings'
       path: '/account/settings'
       fullPath: '/account/settings'
       preLoaderRoute: typeof AccountSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/products/new': {
+      id: '/admin/products/new'
+      path: '/admin/products/new'
+      fullPath: '/admin/products/new'
+      preLoaderRoute: typeof AdminProductsNewRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -243,9 +323,13 @@ const rootRouteChildren: RootRouteChildren = {
   CraftingRoute: CraftingRoute,
   FavoritesRoute: FavoritesRoute,
   SaleRoute: SaleRoute,
+  SignupSuccessRoute: SignupSuccessRoute,
   AccountSettingsRoute: AccountSettingsRoute,
+  AdminItemsRoute: AdminItemsRoute,
+  AdminStatsRoute: AdminStatsRoute,
   CategoryCategoryRoute: CategoryCategoryRoute,
   ProductIdRoute: ProductIdRoute,
+  AdminProductsNewRoute: AdminProductsNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

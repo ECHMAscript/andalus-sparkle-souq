@@ -1,20 +1,32 @@
 // @ts-nocheck
-import { useMemo, useRef, useState } from "react";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw, Trash2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import SouqBag from "@/components/SouqBag";
 import { findProductById, sizeGuides, products } from "@/lib/products";
+import { loadCustomProducts, findCustomProduct, removeCustomProduct, useCustomProducts } from "@/lib/custom-products";
 import { addToBag, useFavorites, toggleFavorite } from "@/lib/store";
 import { ProductCard } from "@/components/Products";
 import SizeGuide from "@/components/SizeGuide";
+import { trackProductEvent } from "@/lib/track";
+import { useRole } from "@/lib/use-role";
+import { useAdminMode } from "@/lib/admin-mode";
+import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
-  loader: ({ params }) => {
-    const p = findProductById(params.id);
+  loader: async ({ params }) => {
+    // Static seed products resolve synchronously; admin-added ones live in
+    // the DB, so ensure that list is loaded before deciding on notFound.
+    let p = findProductById(params.id);
+    if (!p) {
+      await loadCustomProducts();
+      p = findCustomProduct(params.id);
+    }
     if (!p) throw notFound();
     return { product: p };
   },
@@ -25,6 +37,7 @@ export const Route = createFileRoute("/product/$id")({
       { property: "og:image", content: loaderData?.product?.img ?? "" },
     ],
   }),
+
   notFoundComponent: () => (
     <PageShell>
       <Navbar />
@@ -97,11 +110,40 @@ function ZoomImage({ src, alt }) {
 }
 
 function ProductPage() {
-  const { product: p } = Route.useLoaderData();
+  const { product: loaded } = Route.useLoaderData();
+  const navigate = useNavigate();
+  const { isAdmin } = useRole();
+  const adminMode = useAdminMode();
+  const custom = useCustomProducts();
+  // Prefer the reactive custom-products copy so edits/deletes flow through.
+  const p = useMemo(
+    () => custom.find((x) => x.id === loaded.id) ?? loaded,
+    [custom, loaded],
+  );
+  const isCustomPiece = !!custom.find((x) => x.id === p.id);
   const favs = useFavorites();
   const favored = favs.includes(p.id);
+  const [deleting, setDeleting] = useState(false);
 
-  const sizes = sizeGuides[p.category] ?? [];
+  // Gallery: use p.images if provided; otherwise fall back to the main image
+  // plus a few same-category siblings as placeholder alternate shots.
+  const gallery = useMemo(() => {
+    if (Array.isArray(p.images) && p.images.length > 0) return p.images;
+    const siblings = products
+      .filter((x) => x.category === p.category && x.id !== p.id)
+      .slice(0, 3)
+      .map((x) => x.img);
+    return [p.img, ...siblings];
+  }, [p]);
+  const [activeImg, setActiveImg] = useState(0);
+  useEffect(() => setActiveImg(0), [p.id]);
+
+  // Admin-added pieces store their own sizes list on the product; seeded
+  // pieces fall back to the shared per-category size guide.
+  const sizes = (Array.isArray(p.sizes) && p.sizes.length > 0)
+    ? p.sizes
+    : (sizeGuides[p.category] ?? []);
+
   const [size, setSize] = useState(sizes[Math.floor(sizes.length / 2)] ?? "");
   const [customSize, setCustomSize] = useState("");
   const [isCustom, setIsCustom] = useState(false);
@@ -115,9 +157,46 @@ function ProductPage() {
   const handleAdd = () => {
     if (!canAdd) return;
     addToBag({ id: p.id, size: finalSize, qty });
+    trackProductEvent({ productId: p.id, productName: p.name, eventType: "cart" });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
+
+  const handleFavorite = () => {
+    const wasFav = favored;
+    toggleFavorite(p.id);
+    if (!wasFav) trackProductEvent({ productId: p.id, productName: p.name, eventType: "favorite" });
+  };
+
+  const handleDelete = async () => {
+    if (!isCustomPiece) {
+      toast.error("Seeded pieces can't be deleted from the storefront.");
+      return;
+    }
+    const ok = typeof window !== "undefined"
+      ? window.confirm(`Delete "${p.name}" permanently? This cannot be undone.`)
+      : true;
+    if (!ok) return;
+    setDeleting(true);
+    try {
+      await removeCustomProduct(p.id);
+      toast.success(`${p.name} was removed from the store.`);
+      navigate({ to: "/category/$category", params: { category: p.category.toLowerCase() } });
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || "Couldn't delete the piece. Please try again.");
+      setDeleting(false);
+    }
+  };
+
+
+  // Track a "view" event once the user dwells on the product for 10+ seconds.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      trackProductEvent({ productId: p.id, productName: p.name, eventType: "view" });
+    }, 10_000);
+    return () => clearTimeout(timer);
+  }, [p.id, p.name]);
 
   const related = useMemo(
     () => products.filter((x) => x.category === p.category && x.id !== p.id).slice(0, 4),
@@ -141,7 +220,34 @@ function ProductPage() {
         {/* Row on lg+; column on smaller screens, image on top */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           <div>
-            <ZoomImage src={p.img} alt={p.name} />
+            <ZoomImage src={gallery[activeImg] ?? p.img} alt={p.name} />
+            {gallery.length > 1 && (
+              <div className="mt-4 grid grid-cols-4 gap-2 sm:gap-3">
+                {gallery.map((src, i) => {
+                  const isActive = i === activeImg;
+                  return (
+                    <button
+                      key={`${src}-${i}`}
+                      onClick={() => setActiveImg(i)}
+                      aria-label={`View image ${i + 1} of ${p.name}`}
+                      aria-current={isActive}
+                      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-300 ${
+                        isActive
+                          ? "ring-2 ring-primary ring-offset-2 ring-offset-background -translate-y-0.5"
+                          : "neo-sm hover:-translate-y-0.5 opacity-80 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={src}
+                        alt={`${p.name} view ${i + 1}`}
+                        className="w-full h-full object-cover"
+                        draggable={false}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             <p className="hidden md:block text-[11px] uppercase tracking-[0.25em] text-muted-foreground mt-3 text-center">
               Hover the image to zoom in
             </p>
@@ -157,7 +263,21 @@ function ProductPage() {
             <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
               {p.style} · {p.material}
             </div>
-            <h1 className="font-display text-3xl md:text-4xl leading-tight">{p.name}</h1>
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="font-display text-3xl md:text-4xl leading-tight">{p.name}</h1>
+              {isAdmin && adminMode && isCustomPiece && (
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  aria-label={`Delete ${p.name} permanently`}
+                  className="neo-pressable shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-destructive disabled:opacity-50"
+                >
+                  <Trash2 className="size-3.5" />
+                  {deleting ? "Deleting…" : "Delete"}
+                </button>
+              )}
+            </div>
+
 
             <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
@@ -292,7 +412,7 @@ function ProductPage() {
                   : "Add to Bag"}
               </button>
               <button
-                onClick={() => toggleFavorite(p.id)}
+                onClick={handleFavorite}
                 aria-label={favored ? "Remove from favorites" : "Add to favorites"}
                 className={`neo-pressable px-5 py-4 inline-flex items-center justify-center cursor-pointer ${
                   favored ? "text-destructive" : ""

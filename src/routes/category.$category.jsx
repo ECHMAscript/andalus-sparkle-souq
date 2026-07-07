@@ -1,13 +1,17 @@
 // @ts-nocheck
 import { useMemo, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, SlidersHorizontal, X, Plus } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import { ProductCard } from "@/components/Products";
 import { products, categoryTiles, filterOptions } from "@/lib/products";
+import { useCustomProducts } from "@/lib/custom-products";
 import { useFavorites } from "@/lib/store";
+import { useRole } from "@/lib/use-role";
+import { useAdminMode } from "@/lib/admin-mode";
+
 
 export const Route = createFileRoute("/category/$category")({
   component: CategoryPage,
@@ -92,11 +96,15 @@ function FilterGroup({ title, options, selected, onToggle }) {
 function CategoryPage() {
   const { categoryName, blurb } = Route.useLoaderData();
   const favs = useFavorites();
+  const custom = useCustomProducts();
+  const { isAdmin } = useRole();
+  const adminMode = useAdminMode();
 
   const base = useMemo(
-    () => products.filter((p) => p.category === categoryName),
-    [categoryName],
+    () => [...custom, ...products].filter((p) => p.category === categoryName),
+    [categoryName, custom],
   );
+
 
   const [styleSel, setStyleSel] = useState([]);
   const [materialSel, setMaterialSel] = useState([]);
@@ -161,10 +169,26 @@ function CategoryPage() {
             <span className="mx-2">/</span>
             <span className="text-foreground">{categoryName}</span>
           </div>
-          <h1 className="font-display text-3xl sm:text-5xl">
-            <span className="italic text-gold-gradient">{categoryName}</span>
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2">{blurb}</p>
+          <div className="flex items-end justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="font-display text-3xl sm:text-5xl">
+                <span className="italic text-gold-gradient">{categoryName}</span>
+              </h1>
+              <p className="text-sm text-muted-foreground mt-2">{blurb}</p>
+            </div>
+            {isAdmin && adminMode && (
+              <Link
+                to="/admin/products/new"
+                search={{ category: categoryName }}
+                className="neo-pressable inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs uppercase tracking-widest font-semibold text-primary"
+                aria-label={`Add a new ${categoryName} product`}
+              >
+                <Plus className="size-4" />
+                Add {categoryName.replace(/s$/, "")}
+              </Link>
+            )}
+          </div>
+
         </div>
 
         {/* Toolbar — mobile filter trigger + sort */}
