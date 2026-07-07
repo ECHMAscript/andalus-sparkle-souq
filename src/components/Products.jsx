@@ -169,65 +169,75 @@ export function ProductCard({ p, favorited }) {
 
 
   return (
-    <Link
-      to="/product/$id"
-      params={{ id: p.id }}
-      className="neo-pressable p-3 group flex flex-col"
-    >
-      <div className="relative neo-inset rounded-xl overflow-hidden aspect-square">
-        <img
-          src={p.img}
-          alt={p.name}
-          loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        />
-        <ImageTag tag={p.tag} stock={p.stock} />
-        <button
-          onClick={handleFav}
-          aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
-          aria-pressed={favorited}
-          className={`absolute top-3 right-3 p-2 grid place-items-center rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 ${
-            favorited ? "bg-destructive hover:bg-destructive/90" : "bg-background/80 hover:bg-background"
-          }`}
-          style={{
-            boxShadow: favorited
-              ? "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)"
-              : "0 1px 3px color-mix(in oklab, black 12%, transparent)",
-          }}
-        >
-          <Heart className={`size-3.5 transition-colors ${favorited ? "text-white fill-white" : "text-foreground"}`} />
-        </button>
-        {canDelete && (
+    <>
+      <Link
+        to="/product/$id"
+        params={{ id: p.id }}
+        className="neo-pressable p-3 group flex flex-col"
+      >
+        <div className="relative neo-inset rounded-xl overflow-hidden aspect-square">
+          <img
+            src={p.img}
+            alt={p.name}
+            loading="lazy"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          />
+          <ImageTag tag={p.tag} stock={p.stock} />
           <button
-            onClick={handleDelete}
-            disabled={deleting}
-            aria-label={`Delete ${p.name} permanently`}
-            className="absolute top-3 right-14 p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
-            style={{ boxShadow: "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)" }}
+            onClick={handleFav}
+            aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+            aria-pressed={favorited}
+            className={`absolute top-3 right-3 p-2 grid place-items-center rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 ${
+              favorited ? "bg-destructive hover:bg-destructive/90" : "bg-background/80 hover:bg-background"
+            }`}
+            style={{
+              boxShadow: favorited
+                ? "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)"
+                : "0 1px 3px color-mix(in oklab, black 12%, transparent)",
+            }}
           >
-            <Trash2 className="size-3.5" />
+            <Heart className={`size-3.5 transition-colors ${favorited ? "text-white fill-white" : "text-foreground"}`} />
           </button>
-        )}
-        <span className="absolute bottom-3 left-3 right-3 btn-gold py-2.5 text-[10px] uppercase tracking-widest font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity">
-          View Piece
-        </span>
-      </div>
-      <div className="px-1 pt-4 pb-1 flex flex-col gap-1.5 flex-1">
-        <h3 className="text-sm font-medium leading-tight">{p.name}</h3>
-        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          <Star className="size-3 fill-primary text-primary" />
-          <span>{p.rating}</span>
-          <span>·</span>
-          <span>{p.reviews} reviews</span>
+          {canDelete && (
+            <button
+              onClick={askDelete}
+              disabled={deleting}
+              aria-label={`Delete ${p.name} permanently`}
+              className="absolute top-3 right-14 p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+              style={{ boxShadow: "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)" }}
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          )}
+          <span className="absolute bottom-3 left-3 right-3 btn-gold py-2.5 text-[10px] uppercase tracking-widest font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity">
+            View Piece
+          </span>
         </div>
-        <div className="flex items-baseline gap-2 mt-auto pt-1">
-          <span className="text-base font-semibold text-foreground">€ {p.price.toLocaleString()}</span>
-          {p.was && <span className="text-xs text-muted-foreground line-through">€ {p.was.toLocaleString()}</span>}
+        <div className="px-1 pt-4 pb-1 flex flex-col gap-1.5 flex-1">
+          <h3 className="text-sm font-medium leading-tight">{p.name}</h3>
+          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <Star className="size-3 fill-primary text-primary" />
+            <span>{p.rating}</span>
+            <span>·</span>
+            <span>{p.reviews} reviews</span>
+          </div>
+          <div className="flex items-baseline gap-2 mt-auto pt-1">
+            <span className="text-base font-semibold text-foreground">€ {p.price.toLocaleString()}</span>
+            {p.was && <span className="text-xs text-muted-foreground line-through">€ {p.was.toLocaleString()}</span>}
+          </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+      <ConfirmDeleteModal
+        open={confirmOpen}
+        name={p.name}
+        busy={deleting}
+        onCancel={() => (deleting ? null : setConfirmOpen(false))}
+        onConfirm={confirmDelete}
+      />
+    </>
   );
 }
+
 
 export default function Products() {
   const [active, setActive] = useState(0);
