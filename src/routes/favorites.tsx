@@ -23,7 +23,9 @@ export const Route = createFileRoute("/favorites")({
 
 function FavoritesPage() {
   const favs = useFavorites();
-  const items = products.filter((p) => favs.includes(p.id));
+  const custom = useCustomProducts();
+  const items = [...custom, ...products].filter((p) => favs.includes(p.id));
+
 
   return (
     <PageShell>
