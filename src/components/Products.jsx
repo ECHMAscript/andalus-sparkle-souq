@@ -1,8 +1,13 @@
 import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { products, categories } from "@/lib/products";
 import { useFavorites, toggleFavorite } from "@/lib/store";
+import { useCustomProducts, removeCustomProduct } from "@/lib/custom-products";
+import { useRole } from "@/lib/use-role";
+import { useAdminMode } from "@/lib/admin-mode";
+
 
 function ImageTag({ tag, stock }) {
   const badges = [];
