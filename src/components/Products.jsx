@@ -102,6 +102,17 @@ export function ProductCard({ p, favorited }) {
         >
           <Heart className={`size-3.5 transition-colors ${favorited ? "text-white fill-white" : "text-foreground"}`} />
         </button>
+        {canDelete && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            aria-label={`Delete ${p.name} permanently`}
+            className="absolute top-3 right-14 p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+            style={{ boxShadow: "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)" }}
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        )}
         <span className="absolute bottom-3 left-3 right-3 btn-gold py-2.5 text-[10px] uppercase tracking-widest font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity">
           View Piece
         </span>
