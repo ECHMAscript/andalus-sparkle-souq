@@ -8,6 +8,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import { Loader2, User, Lock, Mail, MapPin, Phone, Sparkles, Check, X } from "lucide-react";
+import { checkUsernameAvailable, checkEmailAvailable } from "@/lib/availability.functions";
+
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
