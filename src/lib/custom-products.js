@@ -101,6 +101,23 @@ export async function removeCustomProduct(id) {
   emit();
 }
 
+// Update sale fields (was / price / tag) on a DB-backed product.
+export async function setProductSale(id, { was, price, tag }) {
+  const patch = { was, price, tag };
+  const { data, error } = await supabase
+    .from("products")
+    .update(patch)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) throw error;
+  const saved = rowToProduct(data);
+  state = state.map((p) => (p.id === id ? saved : p));
+  emit();
+  return saved;
+}
+
+
 export function useCustomProducts() {
   const list = useSyncExternalStore(
     (l) => {

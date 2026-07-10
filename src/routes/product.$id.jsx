@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw, Trash2 } from "lucide-react";
+import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw, Trash2, Tag, MessageSquare } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
@@ -11,10 +11,14 @@ import { loadCustomProducts, findCustomProduct, removeCustomProduct, useCustomPr
 import { addToBag, useFavorites, toggleFavorite } from "@/lib/store";
 import { ProductCard } from "@/components/Products";
 import SizeGuide from "@/components/SizeGuide";
+import ConfirmModal from "@/components/ConfirmModal";
+import SaleModal from "@/components/SaleModal";
+import ProductReviews from "@/components/ProductReviews";
 import { trackProductEvent } from "@/lib/track";
 import { useRole } from "@/lib/use-role";
 import { useAdminMode } from "@/lib/admin-mode";
 import { toast } from "sonner";
+
 
 
 export const Route = createFileRoute("/product/$id")({
@@ -140,9 +144,13 @@ function ProductPage() {
 
   // Admin-added pieces store their own sizes list on the product; seeded
   // pieces fall back to the shared per-category size guide.
-  const sizes = (Array.isArray(p.sizes) && p.sizes.length > 0)
-    ? p.sizes
-    : (sizeGuides[p.category] ?? []);
+  // Earrings are one-size and never use a size selector or a size guide.
+  const showSizes = p.category !== "Earrings";
+  const sizes = showSizes
+    ? ((Array.isArray(p.sizes) && p.sizes.length > 0)
+        ? p.sizes
+        : (sizeGuides[p.category] ?? []))
+    : [];
 
   const [size, setSize] = useState(sizes[Math.floor(sizes.length / 2)] ?? "");
   const [customSize, setCustomSize] = useState("");
@@ -150,9 +158,16 @@ function ProductPage() {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [saleOpen, setSaleOpen] = useState(false);
 
-  const finalSize = isCustom ? `Custom: ${customSize.trim()}` : size;
-  const canAdd = isCustom ? customSize.trim().length > 0 : !!size;
+  const finalSize = showSizes
+    ? (isCustom ? `Custom: ${customSize.trim()}` : size)
+    : "";
+  const canAdd = showSizes
+    ? (isCustom ? customSize.trim().length > 0 : !!size)
+    : true;
 
   const handleAdd = () => {
     if (!canAdd) return;
@@ -168,19 +183,19 @@ function ProductPage() {
     if (!wasFav) trackProductEvent({ productId: p.id, productName: p.name, eventType: "favorite" });
   };
 
-  const handleDelete = async () => {
+  const askDelete = () => {
     if (!isCustomPiece) {
       toast.error("Seeded pieces can't be deleted from the storefront.");
       return;
     }
-    const ok = typeof window !== "undefined"
-      ? window.confirm(`Delete "${p.name}" permanently? This cannot be undone.`)
-      : true;
-    if (!ok) return;
+    setConfirmDeleteOpen(true);
+  };
+  const confirmDelete = async () => {
     setDeleting(true);
     try {
       await removeCustomProduct(p.id);
       toast.success(`${p.name} was removed from the store.`);
+      setConfirmDeleteOpen(false);
       navigate({ to: "/category/$category", params: { category: p.category.toLowerCase() } });
     } catch (err) {
       console.error(err);
@@ -188,6 +203,15 @@ function ProductPage() {
       setDeleting(false);
     }
   };
+
+  const askSale = () => {
+    if (!isCustomPiece) {
+      toast.error("Only admin-added pieces can be put on sale from here.");
+      return;
+    }
+    setSaleOpen(true);
+  };
+
 
 
   // Track a "view" event once the user dwells on the product for 10+ seconds.
@@ -255,9 +279,9 @@ function ProductPage() {
 
           <div className="relative overflow-hidden">
             <div
-              aria-hidden={showGuide}
+              aria-hidden={showGuide || showReviews}
               className={`flex flex-col transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] ${
-                showGuide ? "-translate-x-[110%] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
+                (showGuide || showReviews) ? "-translate-x-[110%] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
               }`}
             >
             <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
@@ -266,17 +290,28 @@ function ProductPage() {
             <div className="flex items-start justify-between gap-3">
               <h1 className="font-display text-3xl md:text-4xl leading-tight">{p.name}</h1>
               {isAdmin && adminMode && isCustomPiece && (
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  aria-label={`Delete ${p.name} permanently`}
-                  className="neo-pressable shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-destructive disabled:opacity-50"
-                >
-                  <Trash2 className="size-3.5" />
-                  {deleting ? "Deleting…" : "Delete"}
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={askSale}
+                    aria-label={`Put ${p.name} on sale`}
+                    className="neo-pressable inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-primary"
+                  >
+                    <Tag className="size-3.5" />
+                    Sale
+                  </button>
+                  <button
+                    onClick={askDelete}
+                    disabled={deleting}
+                    aria-label={`Delete ${p.name} permanently`}
+                    className="neo-pressable inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-destructive disabled:opacity-50"
+                  >
+                    <Trash2 className="size-3.5" />
+                    {deleting ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
               )}
             </div>
+
 
 
             <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
@@ -297,8 +332,8 @@ function ProductPage() {
 
             <p className="text-sm text-foreground/75 leading-relaxed mt-5">{p.description}</p>
 
-            {/* Size selector */}
-            {sizes.length > 0 && (
+            {/* Size selector — hidden for one-size categories like Earrings */}
+            {showSizes && sizes.length > 0 && (
               <div className="mt-7">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-xs uppercase tracking-[0.25em] text-foreground/80">
@@ -354,6 +389,7 @@ function ProductPage() {
                 )}
               </div>
             )}
+
 
             {/* Quantity */}
             <div className="mt-6 flex items-center gap-4">
@@ -422,6 +458,15 @@ function ProductPage() {
               </button>
             </div>
 
+            {/* Reviews trigger */}
+            <button
+              onClick={() => setShowReviews(true)}
+              className="mt-4 neo-pressable w-full py-3 rounded-full text-[11px] uppercase tracking-widest font-semibold inline-flex items-center justify-center gap-2 text-foreground/80 hover:text-primary transition-colors"
+            >
+              <MessageSquare className="size-4" />
+              Read &amp; write reviews
+            </button>
+
             {/* Trust strip */}
             <div className="mt-8 grid grid-cols-3 gap-3">
               {[
@@ -446,6 +491,16 @@ function ProductPage() {
             >
               <SizeGuide category={p.category} onClose={() => setShowGuide(false)} />
             </div>
+
+            {/* Reviews panel — slides in from the right when toggled */}
+            <div
+              aria-hidden={!showReviews}
+              className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] ${
+                showReviews ? "translate-x-0 opacity-100" : "translate-x-[110%] opacity-0 pointer-events-none"
+              }`}
+            >
+              <ProductReviews productId={p.id} onClose={() => setShowReviews(false)} />
+            </div>
           </div>
         </div>
 
@@ -463,7 +518,21 @@ function ProductPage() {
           </section>
         )}
       </main>
+      <ConfirmModal
+        open={confirmDeleteOpen}
+        eyebrow="Admin action"
+        title="Delete this piece?"
+        message={`${p.name} will be removed from the storefront and permanently deleted from the database. This cannot be undone.`}
+        confirmLabel="Delete piece"
+        busyLabel="Deleting…"
+        destructive
+        busy={deleting}
+        onCancel={() => (deleting ? null : setConfirmDeleteOpen(false))}
+        onConfirm={confirmDelete}
+      />
+      <SaleModal open={saleOpen} product={p} onClose={() => setSaleOpen(false)} />
       <Footer />
     </PageShell>
   );
+
 }

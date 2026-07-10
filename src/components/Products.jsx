@@ -1,101 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Heart, Star, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { Heart, Star, Trash2, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { products, categories } from "@/lib/products";
 import { useFavorites, toggleFavorite } from "@/lib/store";
 import { useCustomProducts, removeCustomProduct } from "@/lib/custom-products";
 import { useRole } from "@/lib/use-role";
 import { useAdminMode } from "@/lib/admin-mode";
+import ConfirmModal from "@/components/ConfirmModal";
+import SaleModal from "@/components/SaleModal";
 
-// Themed confirmation modal — matches the souq neomorphic + gold palette
-// and replaces the browser's default window.confirm() dialog.
-function ConfirmDeleteModal({ open, name, busy, onCancel, onConfirm }) {
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e) => { if (e.key === "Escape" && !busy) onCancel(); };
-    window.addEventListener("keydown", onKey);
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = overflow;
-    };
-  }, [open, busy, onCancel]);
-
-  if (!open || typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-delete-title"
-      className="fixed inset-0 z-[100] grid place-items-center px-4"
-    >
-      <div
-        onClick={busy ? undefined : onCancel}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-        aria-hidden
-      />
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md neo p-7 rounded-2xl bg-card animate-in zoom-in-95 fade-in duration-200"
-        style={{
-          boxShadow:
-            "0 30px 80px -20px color-mix(in oklab, black 55%, transparent), 0 0 0 1px color-mix(in oklab, var(--primary) 20%, transparent)",
-        }}
-      >
-        <div className="flex items-start gap-4">
-          <div
-            className="neo-inset shrink-0 size-12 rounded-full grid place-items-center"
-            style={{ color: "oklch(0.55 0.19 27)" }}
-          >
-            <AlertTriangle className="size-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-1">
-              Admin action
-            </div>
-            <h2 id="confirm-delete-title" className="font-display text-2xl leading-tight">
-              Delete this piece?
-            </h2>
-            <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-              <span className="text-foreground font-medium">{name}</span> will be
-              removed from the storefront and permanently deleted from the
-              database. This cannot be undone.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-7 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={busy}
-            className="neo-pressable px-5 py-3 text-[11px] uppercase tracking-widest font-semibold disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={busy}
-            className="px-5 py-3 rounded-full text-[11px] uppercase tracking-widest font-semibold text-white inline-flex items-center justify-center gap-2 transition-transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
-            style={{
-              background: "linear-gradient(135deg, oklch(0.58 0.19 27), oklch(0.42 0.16 25))",
-              boxShadow: "0 12px 28px -10px color-mix(in oklab, oklch(0.55 0.19 27) 70%, transparent)",
-            }}
-          >
-            {busy ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-            {busy ? "Deleting…" : "Delete piece"}
-          </button>
-        </div>
-      </div>
-    </div>,
-    document.body,
-  );
-}
 
 
 
@@ -135,7 +49,8 @@ export function ProductCard({ p, favorited }) {
   const isCustomPiece = custom.some((x) => x.id === p.id);
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const canDelete = isAdmin && adminMode;
+  const [saleOpen, setSaleOpen] = useState(false);
+  const canAdmin = isAdmin && adminMode;
 
   const handleFav = (e) => {
     e.stopPropagation();
@@ -151,6 +66,16 @@ export function ProductCard({ p, favorited }) {
       return;
     }
     setConfirmOpen(true);
+  };
+
+  const askSale = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isCustomPiece) {
+      toast.error("Only admin-added pieces can be put on sale from here.");
+      return;
+    }
+    setSaleOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -198,16 +123,31 @@ export function ProductCard({ p, favorited }) {
           >
             <Heart className={`size-3.5 transition-colors ${favorited ? "text-white fill-white" : "text-foreground"}`} />
           </button>
-          {canDelete && (
-            <button
-              onClick={askDelete}
-              disabled={deleting}
-              aria-label={`Delete ${p.name} permanently`}
-              className="absolute top-3 right-14 p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
-              style={{ boxShadow: "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)" }}
-            >
-              <Trash2 className="size-3.5" />
-            </button>
+          {canAdmin && (
+            <>
+              <button
+                onClick={askSale}
+                aria-label={`Put ${p.name} on sale`}
+                title="Put on sale"
+                className="absolute top-3 right-14 p-2 grid place-items-center rounded-full text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95"
+                style={{
+                  background: "linear-gradient(135deg, var(--gold), oklch(0.55 0.14 75))",
+                  boxShadow: "0 4px 12px color-mix(in oklab, var(--gold) 55%, transparent)",
+                }}
+              >
+                <Tag className="size-3.5" />
+              </button>
+              <button
+                onClick={askDelete}
+                disabled={deleting}
+                aria-label={`Delete ${p.name} permanently`}
+                title="Delete piece"
+                className="absolute top-3 right-[6.25rem] p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+                style={{ boxShadow: "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)" }}
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </>
           )}
           <span className="absolute bottom-3 left-3 right-3 btn-gold py-2.5 text-[10px] uppercase tracking-widest font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity">
             View Piece
@@ -227,16 +167,23 @@ export function ProductCard({ p, favorited }) {
           </div>
         </div>
       </Link>
-      <ConfirmDeleteModal
+      <ConfirmModal
         open={confirmOpen}
-        name={p.name}
+        eyebrow="Admin action"
+        title="Delete this piece?"
+        message={`${p.name} will be removed from the storefront and permanently deleted from the database. This cannot be undone.`}
+        confirmLabel="Delete piece"
+        busyLabel="Deleting…"
+        destructive
         busy={deleting}
         onCancel={() => (deleting ? null : setConfirmOpen(false))}
         onConfirm={confirmDelete}
       />
+      <SaleModal open={saleOpen} product={p} onClose={() => setSaleOpen(false)} />
     </>
   );
 }
+
 
 
 export default function Products() {
