@@ -475,19 +475,22 @@ function CollectionsStrip({ collections }) {
 /* ---------------- Page ---------------- */
 
 function SalePage() {
-  const sale = useMemo(() => getSaleItems(), []);
-  const collections = useMemo(() => getSaleCollections(), []);
+  const custom = useCustomProducts();
+  const allProducts = useMemo(() => [...custom, ...products], [custom]);
+  const sale = useMemo(() => getSaleItems(allProducts), [allProducts]);
+  const collections = useMemo(() => getSaleCollections(allProducts), [allProducts]);
   const favs = useFavorites();
 
   const heroItems =
     sale.length >= 3
       ? sale.slice(0, 3)
-      : [...sale, ...products.filter((p) => !sale.includes(p))].slice(0, 3);
+      : [...sale, ...allProducts.filter((p) => !sale.includes(p))].slice(0, 3);
 
   const carouselItems =
     sale.length >= 4
       ? sale
-      : [...sale, ...products.filter((p) => !sale.includes(p))].slice(0, 6);
+      : [...sale, ...allProducts.filter((p) => !sale.includes(p))].slice(0, 6);
+
 
   return (
     <PageShell>
