@@ -49,7 +49,8 @@ export function ProductCard({ p, favorited }) {
   const isCustomPiece = custom.some((x) => x.id === p.id);
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const canDelete = isAdmin && adminMode;
+  const [saleOpen, setSaleOpen] = useState(false);
+  const canAdmin = isAdmin && adminMode;
 
   const handleFav = (e) => {
     e.stopPropagation();
@@ -65,6 +66,16 @@ export function ProductCard({ p, favorited }) {
       return;
     }
     setConfirmOpen(true);
+  };
+
+  const askSale = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isCustomPiece) {
+      toast.error("Only admin-added pieces can be put on sale from here.");
+      return;
+    }
+    setSaleOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -112,16 +123,31 @@ export function ProductCard({ p, favorited }) {
           >
             <Heart className={`size-3.5 transition-colors ${favorited ? "text-white fill-white" : "text-foreground"}`} />
           </button>
-          {canDelete && (
-            <button
-              onClick={askDelete}
-              disabled={deleting}
-              aria-label={`Delete ${p.name} permanently`}
-              className="absolute top-3 right-14 p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
-              style={{ boxShadow: "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)" }}
-            >
-              <Trash2 className="size-3.5" />
-            </button>
+          {canAdmin && (
+            <>
+              <button
+                onClick={askSale}
+                aria-label={`Put ${p.name} on sale`}
+                title="Put on sale"
+                className="absolute top-3 right-14 p-2 grid place-items-center rounded-full text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95"
+                style={{
+                  background: "linear-gradient(135deg, var(--gold), oklch(0.55 0.14 75))",
+                  boxShadow: "0 4px 12px color-mix(in oklab, var(--gold) 55%, transparent)",
+                }}
+              >
+                <Tag className="size-3.5" />
+              </button>
+              <button
+                onClick={askDelete}
+                disabled={deleting}
+                aria-label={`Delete ${p.name} permanently`}
+                title="Delete piece"
+                className="absolute top-3 right-[6.25rem] p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 text-white backdrop-blur-sm transition-all duration-200 hover:scale-110 active:scale-95 disabled:opacity-50"
+                style={{ boxShadow: "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)" }}
+              >
+                <Trash2 className="size-3.5" />
+              </button>
+            </>
           )}
           <span className="absolute bottom-3 left-3 right-3 btn-gold py-2.5 text-[10px] uppercase tracking-widest font-semibold text-center opacity-0 group-hover:opacity-100 transition-opacity">
             View Piece
@@ -141,16 +167,23 @@ export function ProductCard({ p, favorited }) {
           </div>
         </div>
       </Link>
-      <ConfirmDeleteModal
+      <ConfirmModal
         open={confirmOpen}
-        name={p.name}
+        eyebrow="Admin action"
+        title="Delete this piece?"
+        message={`${p.name} will be removed from the storefront and permanently deleted from the database. This cannot be undone.`}
+        confirmLabel="Delete piece"
+        busyLabel="Deleting…"
+        destructive
         busy={deleting}
         onCancel={() => (deleting ? null : setConfirmOpen(false))}
         onConfirm={confirmDelete}
       />
+      <SaleModal open={saleOpen} product={p} onClose={() => setSaleOpen(false)} />
     </>
   );
 }
+
 
 
 export default function Products() {
