@@ -279,9 +279,9 @@ function ProductPage() {
 
           <div className="relative overflow-hidden">
             <div
-              aria-hidden={showGuide}
+              aria-hidden={showGuide || showReviews}
               className={`flex flex-col transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] ${
-                showGuide ? "-translate-x-[110%] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
+                (showGuide || showReviews) ? "-translate-x-[110%] opacity-0 pointer-events-none" : "translate-x-0 opacity-100"
               }`}
             >
             <div className="text-[10px] uppercase tracking-[0.3em] text-primary mb-2">
@@ -290,17 +290,28 @@ function ProductPage() {
             <div className="flex items-start justify-between gap-3">
               <h1 className="font-display text-3xl md:text-4xl leading-tight">{p.name}</h1>
               {isAdmin && adminMode && isCustomPiece && (
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  aria-label={`Delete ${p.name} permanently`}
-                  className="neo-pressable shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-destructive disabled:opacity-50"
-                >
-                  <Trash2 className="size-3.5" />
-                  {deleting ? "Deleting…" : "Delete"}
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={askSale}
+                    aria-label={`Put ${p.name} on sale`}
+                    className="neo-pressable inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-primary"
+                  >
+                    <Tag className="size-3.5" />
+                    Sale
+                  </button>
+                  <button
+                    onClick={askDelete}
+                    disabled={deleting}
+                    aria-label={`Delete ${p.name} permanently`}
+                    className="neo-pressable inline-flex items-center gap-2 px-3 py-2 rounded-full text-[11px] uppercase tracking-widest font-semibold text-destructive disabled:opacity-50"
+                  >
+                    <Trash2 className="size-3.5" />
+                    {deleting ? "Deleting…" : "Delete"}
+                  </button>
+                </div>
               )}
             </div>
+
 
 
             <div className="flex items-center gap-3 mt-3 text-sm text-muted-foreground">
