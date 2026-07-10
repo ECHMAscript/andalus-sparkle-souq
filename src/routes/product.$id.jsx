@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw, Trash2 } from "lucide-react";
+import { Heart, Minus, Plus, Star, Truck, ShieldCheck, RefreshCw, Trash2, Tag, MessageSquare } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
@@ -11,10 +11,14 @@ import { loadCustomProducts, findCustomProduct, removeCustomProduct, useCustomPr
 import { addToBag, useFavorites, toggleFavorite } from "@/lib/store";
 import { ProductCard } from "@/components/Products";
 import SizeGuide from "@/components/SizeGuide";
+import ConfirmModal from "@/components/ConfirmModal";
+import SaleModal from "@/components/SaleModal";
+import ProductReviews from "@/components/ProductReviews";
 import { trackProductEvent } from "@/lib/track";
 import { useRole } from "@/lib/use-role";
 import { useAdminMode } from "@/lib/admin-mode";
 import { toast } from "sonner";
+
 
 
 export const Route = createFileRoute("/product/$id")({
