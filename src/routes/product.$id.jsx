@@ -458,6 +458,15 @@ function ProductPage() {
               </button>
             </div>
 
+            {/* Reviews trigger */}
+            <button
+              onClick={() => setShowReviews(true)}
+              className="mt-4 neo-pressable w-full py-3 rounded-full text-[11px] uppercase tracking-widest font-semibold inline-flex items-center justify-center gap-2 text-foreground/80 hover:text-primary transition-colors"
+            >
+              <MessageSquare className="size-4" />
+              Read &amp; write reviews
+            </button>
+
             {/* Trust strip */}
             <div className="mt-8 grid grid-cols-3 gap-3">
               {[
@@ -482,6 +491,16 @@ function ProductPage() {
             >
               <SizeGuide category={p.category} onClose={() => setShowGuide(false)} />
             </div>
+
+            {/* Reviews panel — slides in from the right when toggled */}
+            <div
+              aria-hidden={!showReviews}
+              className={`absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] ${
+                showReviews ? "translate-x-0 opacity-100" : "translate-x-[110%] opacity-0 pointer-events-none"
+              }`}
+            >
+              <ProductReviews productId={p.id} onClose={() => setShowReviews(false)} />
+            </div>
           </div>
         </div>
 
@@ -499,7 +518,21 @@ function ProductPage() {
           </section>
         )}
       </main>
+      <ConfirmModal
+        open={confirmDeleteOpen}
+        eyebrow="Admin action"
+        title="Delete this piece?"
+        message={`${p.name} will be removed from the storefront and permanently deleted from the database. This cannot be undone.`}
+        confirmLabel="Delete piece"
+        busyLabel="Deleting…"
+        destructive
+        busy={deleting}
+        onCancel={() => (deleting ? null : setConfirmDeleteOpen(false))}
+        onConfirm={confirmDelete}
+      />
+      <SaleModal open={saleOpen} product={p} onClose={() => setSaleOpen(false)} />
       <Footer />
     </PageShell>
   );
+
 }
