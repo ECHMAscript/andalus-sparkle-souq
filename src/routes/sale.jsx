@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import { products, categoryTiles } from "@/lib/products";
+import { useCustomProducts } from "@/lib/custom-products";
 import { useFavorites, toggleFavorite } from "@/lib/store";
 
 export const Route = createFileRoute("/sale")({
@@ -28,16 +29,17 @@ export const Route = createFileRoute("/sale")({
 });
 
 // Derive sale items from the catalogue (price drop OR discount tag).
-function getSaleItems() {
-  return products.filter(
-    (p) => p.was != null || (p.tag && p.tag.startsWith("-")),
-  );
+function isOnSale(p) {
+  return p.was != null || (p.tag && p.tag.startsWith("-"));
+}
+function getSaleItems(all) {
+  return all.filter(isOnSale);
 }
 
 // Group sale items into collections keyed by category. Only categories with
 // at least one sale item are returned, in catalogue-tile order.
-function getSaleCollections() {
-  const sale = getSaleItems();
+function getSaleCollections(all) {
+  const sale = getSaleItems(all);
   return categoryTiles
     .map((c) => ({
       ...c,
@@ -45,6 +47,7 @@ function getSaleCollections() {
     }))
     .filter((c) => c.items.length > 0);
 }
+
 
 /* ---------------- Sale Card (top image / bottom white) ---------------- */
 
