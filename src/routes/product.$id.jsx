@@ -144,9 +144,13 @@ function ProductPage() {
 
   // Admin-added pieces store their own sizes list on the product; seeded
   // pieces fall back to the shared per-category size guide.
-  const sizes = (Array.isArray(p.sizes) && p.sizes.length > 0)
-    ? p.sizes
-    : (sizeGuides[p.category] ?? []);
+  // Earrings are one-size and never use a size selector or a size guide.
+  const showSizes = p.category !== "Earrings";
+  const sizes = showSizes
+    ? ((Array.isArray(p.sizes) && p.sizes.length > 0)
+        ? p.sizes
+        : (sizeGuides[p.category] ?? []))
+    : [];
 
   const [size, setSize] = useState(sizes[Math.floor(sizes.length / 2)] ?? "");
   const [customSize, setCustomSize] = useState("");
@@ -154,9 +158,16 @@ function ProductPage() {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [saleOpen, setSaleOpen] = useState(false);
 
-  const finalSize = isCustom ? `Custom: ${customSize.trim()}` : size;
-  const canAdd = isCustom ? customSize.trim().length > 0 : !!size;
+  const finalSize = showSizes
+    ? (isCustom ? `Custom: ${customSize.trim()}` : size)
+    : "";
+  const canAdd = showSizes
+    ? (isCustom ? customSize.trim().length > 0 : !!size)
+    : true;
 
   const handleAdd = () => {
     if (!canAdd) return;
@@ -172,19 +183,19 @@ function ProductPage() {
     if (!wasFav) trackProductEvent({ productId: p.id, productName: p.name, eventType: "favorite" });
   };
 
-  const handleDelete = async () => {
+  const askDelete = () => {
     if (!isCustomPiece) {
       toast.error("Seeded pieces can't be deleted from the storefront.");
       return;
     }
-    const ok = typeof window !== "undefined"
-      ? window.confirm(`Delete "${p.name}" permanently? This cannot be undone.`)
-      : true;
-    if (!ok) return;
+    setConfirmDeleteOpen(true);
+  };
+  const confirmDelete = async () => {
     setDeleting(true);
     try {
       await removeCustomProduct(p.id);
       toast.success(`${p.name} was removed from the store.`);
+      setConfirmDeleteOpen(false);
       navigate({ to: "/category/$category", params: { category: p.category.toLowerCase() } });
     } catch (err) {
       console.error(err);
@@ -192,6 +203,15 @@ function ProductPage() {
       setDeleting(false);
     }
   };
+
+  const askSale = () => {
+    if (!isCustomPiece) {
+      toast.error("Only admin-added pieces can be put on sale from here.");
+      return;
+    }
+    setSaleOpen(true);
+  };
+
 
 
   // Track a "view" event once the user dwells on the product for 10+ seconds.
