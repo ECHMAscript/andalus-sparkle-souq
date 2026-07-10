@@ -59,26 +59,20 @@ function FavoritesPage() {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             {items.map((p) => (
-              <article key={p.id} className="neo-pressable p-3 group flex flex-col">
-                <div className="relative neo-inset rounded-xl overflow-hidden aspect-square">
-                  <img
-                    src={p.img}
-                    alt={p.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <button
-                    onClick={() => toggleFavorite(p.id)}
-                    aria-label="Remove from favorites"
-                    className="absolute top-3 right-3 p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 transition-all duration-200 hover:scale-110"
-                    style={{
-                      boxShadow:
-                        "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)",
-                    }}
-                  >
-                    <X className="size-3.5 text-white" />
-                  </button>
-                </div>
+              <article key={p.id} className="relative group">
+                <Link
+                  to="/product/$id"
+                  params={{ id: p.id }}
+                  className="neo-pressable p-3 flex flex-col"
+                >
+                  <div className="relative neo-inset rounded-xl overflow-hidden aspect-square">
+                    <img
+                      src={p.img}
+                      alt={p.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  </div>
                 <div className="px-1 pt-4 pb-1 flex flex-col gap-1.5 flex-1">
                   <h3 className="text-sm font-medium leading-tight">{p.name}</h3>
                   <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
@@ -98,7 +92,24 @@ function FavoritesPage() {
                     )}
                   </div>
                 </div>
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleFavorite(p.id);
+                  }}
+                  aria-label="Remove from favorites"
+                  className="absolute top-6 right-6 p-2 grid place-items-center rounded-full bg-destructive hover:bg-destructive/90 transition-all duration-200 hover:scale-110 z-10"
+                  style={{
+                    boxShadow:
+                      "0 4px 12px color-mix(in oklab, var(--destructive) 50%, transparent)",
+                  }}
+                >
+                  <X className="size-3.5 text-white" />
+                </button>
               </article>
+
             ))}
           </div>
         )}
