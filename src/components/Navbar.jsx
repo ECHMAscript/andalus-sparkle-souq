@@ -17,6 +17,8 @@ import {
 } from "@/lib/store";
 import { toast } from "sonner";
 import SouqBag from "@/components/SouqBag";
+import ConfirmModal from "@/components/ConfirmModal";
+
 
 function SearchBox({ className = "" }) {
   const [q, setQ] = useState("");
@@ -95,6 +97,8 @@ function NavLinkItem({ item, editing, onSaved, onDeleted }) {
   const [label, setLabel] = useState(item.label);
   const [path, setPath] = useState(item.path);
   const [saving, setSaving] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [removing, setRemoving] = useState(false);
 
   async function save() {
     const trimmed = label.trim();
@@ -111,37 +115,53 @@ function NavLinkItem({ item, editing, onSaved, onDeleted }) {
     onSaved?.();
   }
 
-  async function remove() {
-    if (!confirm(`Remove "${item.label}" from the nav?`)) return;
+  async function confirmRemove() {
+    setRemoving(true);
     const { error } = await supabase.from("nav_items").delete().eq("id", item.id);
+    setRemoving(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Removed");
+    setConfirmOpen(false);
     onDeleted?.();
   }
 
   if (editing) {
     return (
-      <div className="flex items-center gap-1 neo-inset rounded-full pl-3 pr-1 py-1">
-        <input
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          className="bg-transparent text-xs uppercase tracking-[0.15em] w-24 outline-none"
-          placeholder="Label"
+      <>
+        <div className="flex items-center gap-1 neo-inset rounded-full pl-3 pr-1 py-1">
+          <input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            className="bg-transparent text-xs uppercase tracking-[0.15em] w-24 outline-none"
+            placeholder="Label"
+          />
+          <span className="text-muted-foreground text-[10px]">→</span>
+          <input
+            value={path}
+            onChange={(e) => setPath(e.target.value)}
+            className="bg-transparent text-xs w-32 outline-none"
+            placeholder="/path"
+          />
+          <button onClick={save} disabled={saving} aria-label="Save" className="neo-sm p-1.5 text-primary">
+            <Check className="size-3.5" />
+          </button>
+          <button onClick={() => setConfirmOpen(true)} aria-label="Delete" className="neo-sm p-1.5 text-destructive">
+            <Trash2 className="size-3.5" />
+          </button>
+        </div>
+        <ConfirmModal
+          open={confirmOpen}
+          eyebrow="Admin action"
+          title="Remove nav link?"
+          message={`"${item.label}" will be removed from the site navigation. You can add it back later.`}
+          confirmLabel="Remove link"
+          busyLabel="Removing…"
+          destructive
+          busy={removing}
+          onCancel={() => (removing ? null : setConfirmOpen(false))}
+          onConfirm={confirmRemove}
         />
-        <span className="text-muted-foreground text-[10px]">→</span>
-        <input
-          value={path}
-          onChange={(e) => setPath(e.target.value)}
-          className="bg-transparent text-xs w-32 outline-none"
-          placeholder="/path"
-        />
-        <button onClick={save} disabled={saving} aria-label="Save" className="neo-sm p-1.5 text-primary">
-          <Check className="size-3.5" />
-        </button>
-        <button onClick={remove} aria-label="Delete" className="neo-sm p-1.5 text-destructive">
-          <Trash2 className="size-3.5" />
-        </button>
-      </div>
+      </>
     );
   }
 
@@ -154,6 +174,7 @@ function NavLinkItem({ item, editing, onSaved, onDeleted }) {
     </Link>
   );
 }
+
 
 export default function Navbar() {
   const favs = useFavorites();
