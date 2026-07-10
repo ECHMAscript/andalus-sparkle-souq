@@ -332,8 +332,8 @@ function ProductPage() {
 
             <p className="text-sm text-foreground/75 leading-relaxed mt-5">{p.description}</p>
 
-            {/* Size selector */}
-            {sizes.length > 0 && (
+            {/* Size selector — hidden for one-size categories like Earrings */}
+            {showSizes && sizes.length > 0 && (
               <div className="mt-7">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-xs uppercase tracking-[0.25em] text-foreground/80">
@@ -389,6 +389,7 @@ function ProductPage() {
                 )}
               </div>
             )}
+
 
             {/* Quantity */}
             <div className="mt-6 flex items-center gap-4">
