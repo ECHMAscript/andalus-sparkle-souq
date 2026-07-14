@@ -415,7 +415,7 @@ function ProductPage() {
                 <span className="text-xs text-[oklch(0.45_0.12_160)] font-semibold uppercase tracking-widest">
                   {p.tag === "New" ? "Pre-order · ships next season" : "Out of stock · pre-order"}
                 </span>
-              ) : p.stock <= 10 ? (
+              ) : p.stock <= 5 ? (
                 <span className="text-xs text-[oklch(0.55_0.14_75)] font-semibold uppercase tracking-widest">
                   Only {p.stock} left
                 </span>
