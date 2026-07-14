@@ -134,6 +134,40 @@ export async function setProductRating(id, { rating, reviews }) {
   return saved;
 }
 
+// Generic partial update for an admin-owned product. Accepts a UI-shape
+// patch (name/price/stock/description/tag/was/img/images) and writes it
+// through to the DB. Only DB-backed products can be edited — the seeded
+// showcase list in src/lib/products.js lives in code.
+export async function updateCustomProduct(id, patch) {
+  const allowed = {};
+  if (patch.name !== undefined) allowed.name = patch.name;
+  if (patch.category !== undefined) allowed.category = patch.category;
+  if (patch.style !== undefined) allowed.style = patch.style;
+  if (patch.material !== undefined) allowed.material = patch.material;
+  if (patch.occasion !== undefined) allowed.occasion = patch.occasion;
+  if (patch.price !== undefined) allowed.price = patch.price;
+  if (patch.was !== undefined) allowed.was = patch.was;
+  if (patch.tag !== undefined) allowed.tag = patch.tag;
+  if (patch.stock !== undefined) allowed.stock = patch.stock;
+  if (patch.description !== undefined) allowed.description = patch.description;
+  if (patch.img !== undefined) allowed.img = patch.img;
+  if (patch.images !== undefined) allowed.images = patch.images;
+  if (patch.sizes !== undefined) allowed.sizes = patch.sizes;
+
+  const { data, error } = await supabase
+    .from("products")
+    .update(allowed)
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const saved = rowToProduct(data);
+  state = state.map((p) => (p.id === id ? saved : p));
+  emit();
+  return saved;
+}
+
 
 
 

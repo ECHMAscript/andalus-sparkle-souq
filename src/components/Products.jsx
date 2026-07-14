@@ -27,7 +27,7 @@ function ImageTag({ tag, stock }) {
   } else if (isNew) {
     badges.push({ key: "new", label: "NEW", cls: "bg-foreground text-background" });
   }
-  if (!outOfStock && typeof stock === "number" && stock <= 10) {
+  if (!outOfStock && typeof stock === "number" && stock <= 5) {
     badges.push({ key: "stock", label: `Only ${stock} left`, cls: "bg-[oklch(0.55_0.14_75)] text-white" });
   }
   if (!badges.length) return null;

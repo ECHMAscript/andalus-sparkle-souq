@@ -75,6 +75,8 @@ function AddProductPage() {
   );
   const [price, setPrice] = useState("");
   const [tag, setTag] = useState("");
+  const [inStock, setInStock] = useState(true);
+  const [stockCount, setStockCount] = useState("10");
   const [style, setStyle] = useState(filterOptions.Style[0]);
   const [material, setMaterial] = useState(filterOptions.Material[0]);
   const [description, setDescription] = useState("");
@@ -108,6 +110,7 @@ function AddProductPage() {
   // the product detail page so the previews look pixel-accurate.
   const preview = useMemo(() => {
     const priceNum = Number(price) || 0;
+    const stockNum = inStock ? Math.max(0, Math.floor(Number(stockCount) || 0)) : 0;
     return {
       id: slugify(name) || "new-piece",
       name: name || "Untitled Piece",
@@ -120,12 +123,12 @@ function AddProductPage() {
       img: mainImg || "",
       images: mainImg ? [mainImg, ...extraImgs] : extraImgs,
       tag: tag || null,
-      stock: 25,
+      stock: stockNum,
       rating: 0,
       reviews: 0,
       description: description || "A newly-listed piece from the atelier.",
     };
-  }, [name, category, style, material, price, mainImg, extraImgs, tag, description]);
+  }, [name, category, style, material, price, mainImg, extraImgs, tag, description, inStock, stockCount]);
 
   const [publishing, setPublishing] = useState(false);
   const canPublish = mainImg && name.trim() && Number(price) > 0 && !publishing;
@@ -257,6 +260,35 @@ function AddProductPage() {
                 />
               </Field>
             </div>
+
+            <Field label="Availability" hint="Turn off to list the piece as sold out / pre-order.">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="neo-sm inline-flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={inStock}
+                    onChange={(e) => setInStock(e.target.checked)}
+                    className="accent-primary"
+                  />
+                  <span>In stock</span>
+                </label>
+                {inStock ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs uppercase tracking-widest text-muted-foreground">Quantity</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={stockCount}
+                      onChange={(e) => setStockCount(e.target.value)}
+                      className="neo-inset px-4 py-2 rounded-xl bg-transparent w-28 text-sm outline-none"
+                    />
+                  </div>
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">Will show as sold out on the catalog.</span>
+                )}
+              </div>
+            </Field>
+
 
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Style">
