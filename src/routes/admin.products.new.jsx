@@ -110,6 +110,7 @@ function AddProductPage() {
   // the product detail page so the previews look pixel-accurate.
   const preview = useMemo(() => {
     const priceNum = Number(price) || 0;
+    const stockNum = inStock ? Math.max(0, Math.floor(Number(stockCount) || 0)) : 0;
     return {
       id: slugify(name) || "new-piece",
       name: name || "Untitled Piece",
@@ -122,12 +123,12 @@ function AddProductPage() {
       img: mainImg || "",
       images: mainImg ? [mainImg, ...extraImgs] : extraImgs,
       tag: tag || null,
-      stock: 25,
+      stock: stockNum,
       rating: 0,
       reviews: 0,
       description: description || "A newly-listed piece from the atelier.",
     };
-  }, [name, category, style, material, price, mainImg, extraImgs, tag, description]);
+  }, [name, category, style, material, price, mainImg, extraImgs, tag, description, inStock, stockCount]);
 
   const [publishing, setPublishing] = useState(false);
   const canPublish = mainImg && name.trim() && Number(price) > 0 && !publishing;
