@@ -287,7 +287,9 @@ function DeckCarousel({ items }) {
   const deck = items.slice(0, 10);
   const [order, setOrder] = useState(() => deck.map((_, i) => i));
   const [animating, setAnimating] = useState(null); // 'next' | 'prev' | null
+  const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
   const timer = useRef(null);
+  const touchStart = useRef(null);
 
   const next = () => {
     if (animating) return;
