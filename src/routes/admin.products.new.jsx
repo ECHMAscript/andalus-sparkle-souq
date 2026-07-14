@@ -81,9 +81,11 @@ function AddProductPage() {
 
   // Sizes: defaults come from sizeGuides for the selected category. Admin
   // can delete any pill to remove it from the final product's size selector.
-  const [sizes, setSizes] = useState(() => sizeGuides[category] ?? []);
+  // Earrings don't have sizes — skip the default S/M/L pills for that category.
+  const defaultSizesFor = (cat) => (cat === "Earrings" ? [] : sizeGuides[cat] ?? []);
+  const [sizes, setSizes] = useState(() => defaultSizesFor(category));
   useEffect(() => {
-    setSizes(sizeGuides[category] ?? []);
+    setSizes(defaultSizesFor(category));
   }, [category]);
 
   const removeSize = (s) => setSizes((cur) => cur.filter((x) => x !== s));
