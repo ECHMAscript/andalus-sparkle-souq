@@ -61,7 +61,17 @@ export default function ProductReviews({ productId, onClose }) {
       console.error(error);
       toast.error("Couldn't load reviews.");
     } else {
-      setRows(data ?? []);
+      const list = data ?? [];
+      setRows(list);
+      const count = list.length;
+      const avgVal = count
+        ? Math.round((list.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10
+        : 0;
+      try {
+        await setProductRating(productId, { rating: avgVal, reviews: count });
+      } catch (e) {
+        // Non-fatal: built-in (non-DB) products won't have a row to update.
+      }
     }
     setLoading(false);
   };
