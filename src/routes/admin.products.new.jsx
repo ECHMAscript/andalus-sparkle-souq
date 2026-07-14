@@ -261,6 +261,35 @@ function AddProductPage() {
               </Field>
             </div>
 
+            <Field label="Availability" hint="Turn off to list the piece as sold out / pre-order.">
+              <div className="flex flex-wrap items-center gap-3">
+                <label className="neo-sm inline-flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer text-sm">
+                  <input
+                    type="checkbox"
+                    checked={inStock}
+                    onChange={(e) => setInStock(e.target.checked)}
+                    className="accent-primary"
+                  />
+                  <span>In stock</span>
+                </label>
+                {inStock ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs uppercase tracking-widest text-muted-foreground">Quantity</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={stockCount}
+                      onChange={(e) => setStockCount(e.target.value)}
+                      className="neo-inset px-4 py-2 rounded-xl bg-transparent w-28 text-sm outline-none"
+                    />
+                  </div>
+                ) : (
+                  <span className="text-xs text-muted-foreground italic">Will show as sold out on the catalog.</span>
+                )}
+              </div>
+            </Field>
+
+
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Style">
                 <select value={style} onChange={(e) => setStyle(e.target.value)} className="neo-inset px-4 py-3 rounded-xl bg-transparent w-full text-sm outline-none">
