@@ -121,7 +121,7 @@ function AddProductPage() {
       images: mainImg ? [mainImg, ...extraImgs] : extraImgs,
       tag: tag || null,
       stock: 25,
-      rating: 5.0,
+      rating: 0,
       reviews: 0,
       description: description || "A newly-listed piece from the atelier.",
     };

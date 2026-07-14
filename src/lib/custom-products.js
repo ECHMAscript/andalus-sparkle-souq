@@ -117,6 +117,25 @@ export async function setProductSale(id, { was, price, tag }) {
   return saved;
 }
 
+// Update rating/reviews aggregate on a DB-backed product.
+export async function setProductRating(id, { rating, reviews }) {
+  const patch = { rating, reviews };
+  const { data, error } = await supabase
+    .from("products")
+    .update(patch)
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const saved = rowToProduct(data);
+  state = state.map((p) => (p.id === id ? saved : p));
+  emit();
+  return saved;
+}
+
+
+
 
 export function useCustomProducts() {
   const list = useSyncExternalStore(
