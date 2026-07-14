@@ -359,11 +359,12 @@ function DeckCarousel({ items }) {
           const item = deck[idx];
           const isTop = pos === 0;
           const fly = isTop && animating;
-          const baseY = pos * 8;
-          const baseScale = 1 - pos * 0.05;
-          const baseRot = pos * -1.2;
+          const dragProgress = drag.active ? Math.min(1, Math.abs(drag.x) / 140) : 0;
+          const baseY = pos * 8 - (pos > 0 ? pos * 8 * dragProgress : 0);
+          const baseScale = (1 - pos * 0.05) + (pos > 0 ? 0.05 * dragProgress : 0);
+          const baseRot = pos * -1.2 * (1 - dragProgress);
           let transform = `translate(-50%, calc(-50% + ${baseY}px)) scale(${baseScale}) rotate(${baseRot}deg)`;
-          let opacity = 1 - pos * 0.08;
+          let opacity = 1 - pos * 0.08 + (pos > 0 ? 0.08 * dragProgress : 0);
           let transition = "transform 520ms cubic-bezier(0.65,0,0.35,1), opacity 520ms ease";
           if (fly === "next") {
             transform = `translate(calc(-50% + 130%), -50%) scale(0.9) rotate(18deg)`;
@@ -375,6 +376,8 @@ function DeckCarousel({ items }) {
             const rot = drag.x / 20;
             transform = `translate(calc(-50% + ${drag.x}px), calc(-50% + ${drag.y}px)) rotate(${rot}deg)`;
             opacity = Math.max(0.4, 1 - Math.abs(drag.x) / 400);
+            transition = "none";
+          } else if (drag.active) {
             transition = "none";
           }
           const onTouchStart = isTop ? (e) => {
