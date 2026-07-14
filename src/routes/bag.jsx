@@ -2,12 +2,15 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2, ShieldCheck, Truck } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import SouqBag from "@/components/SouqBag";
 import { useBag, updateBagItem, removeFromBag, clearBag } from "@/lib/store";
 import { findProductById } from "@/lib/products";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/bag")({
   component: BagPage,
