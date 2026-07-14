@@ -267,9 +267,10 @@ function BagPage() {
                     </button>
                     <button
                       type="submit"
-                      className="btn-gold flex-1 py-3.5 text-xs uppercase tracking-widest font-semibold"
+                      disabled={placing}
+                      className="btn-gold flex-1 py-3.5 text-xs uppercase tracking-widest font-semibold disabled:opacity-60"
                     >
-                      Place order · € {total.toLocaleString()}
+                      {placing ? "Placing…" : `Place order · € ${total.toLocaleString()}`}
                     </button>
                   </div>
                 </form>
