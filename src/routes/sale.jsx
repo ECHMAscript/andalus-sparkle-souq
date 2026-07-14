@@ -390,7 +390,7 @@ function DeckCarousel({ items }) {
           }
           const onTouchStart = isTop ? (e) => {
             const t = e.touches[0];
-            touchStart.current = { x: t.clientX, y: t.clientY, moved: false };
+            touchStart.current = { x: t.clientX, y: t.clientY, dx: 0, dy: 0, moved: false };
             setDrag({ x: 0, y: 0, active: true });
           } : undefined;
           const onTouchMove = isTop ? (e) => {
@@ -398,12 +398,14 @@ function DeckCarousel({ items }) {
             const t = e.touches[0];
             const dx = t.clientX - touchStart.current.x;
             const dy = t.clientY - touchStart.current.y;
+            touchStart.current.dx = dx;
+            touchStart.current.dy = dy;
             if (Math.abs(dx) > 6 || Math.abs(dy) > 6) touchStart.current.moved = true;
             setDrag({ x: dx, y: dy, active: true });
           } : undefined;
           const onTouchEnd = isTop ? (e) => {
             const moved = touchStart.current?.moved;
-            const dx = drag.x;
+            const dx = touchStart.current?.dx ?? drag.x;
             setDrag({ x: 0, y: 0, active: false });
             touchStart.current = null;
             if (moved) {
