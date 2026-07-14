@@ -5,6 +5,7 @@ import { Star, ChevronLeft, Loader2, Trash2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { setProductRating } from "@/lib/custom-products";
 
 function Stars({ value, size = "size-4" }) {
   return (
