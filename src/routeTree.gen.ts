@@ -20,6 +20,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CategoryCategoryRouteImport } from './routes/category.$category'
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
+import { Route as AdminSalesRouteImport } from './routes/admin.sales'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminItemsRouteImport } from './routes/admin.items'
 import { Route as AccountSettingsRouteImport } from './routes/account.settings'
 import { Route as AdminProductsNewRouteImport } from './routes/admin.products.new'
@@ -79,6 +81,16 @@ const AdminStatsRoute = AdminStatsRouteImport.update({
   path: '/admin/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSalesRoute = AdminSalesRouteImport.update({
+  id: '/admin/sales',
+  path: '/admin/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminItemsRoute = AdminItemsRouteImport.update({
   id: '/admin/items',
   path: '/admin/items',
@@ -106,6 +118,8 @@ export interface FileRoutesByFullPath {
   '/signup-success': typeof SignupSuccessRoute
   '/account/settings': typeof AccountSettingsRoute
   '/admin/items': typeof AdminItemsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
@@ -122,6 +136,8 @@ export interface FileRoutesByTo {
   '/signup-success': typeof SignupSuccessRoute
   '/account/settings': typeof AccountSettingsRoute
   '/admin/items': typeof AdminItemsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
@@ -139,6 +155,8 @@ export interface FileRoutesById {
   '/signup-success': typeof SignupSuccessRoute
   '/account/settings': typeof AccountSettingsRoute
   '/admin/items': typeof AdminItemsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/product/$id': typeof ProductIdRoute
@@ -157,6 +175,8 @@ export interface FileRouteTypes {
     | '/signup-success'
     | '/account/settings'
     | '/admin/items'
+    | '/admin/orders'
+    | '/admin/sales'
     | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
@@ -173,6 +193,8 @@ export interface FileRouteTypes {
     | '/signup-success'
     | '/account/settings'
     | '/admin/items'
+    | '/admin/orders'
+    | '/admin/sales'
     | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
@@ -189,6 +211,8 @@ export interface FileRouteTypes {
     | '/signup-success'
     | '/account/settings'
     | '/admin/items'
+    | '/admin/orders'
+    | '/admin/sales'
     | '/admin/stats'
     | '/category/$category'
     | '/product/$id'
@@ -206,6 +230,8 @@ export interface RootRouteChildren {
   SignupSuccessRoute: typeof SignupSuccessRoute
   AccountSettingsRoute: typeof AccountSettingsRoute
   AdminItemsRoute: typeof AdminItemsRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminSalesRoute: typeof AdminSalesRoute
   AdminStatsRoute: typeof AdminStatsRoute
   CategoryCategoryRoute: typeof CategoryCategoryRoute
   ProductIdRoute: typeof ProductIdRoute
@@ -291,6 +317,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/sales': {
+      id: '/admin/sales'
+      path: '/admin/sales'
+      fullPath: '/admin/sales'
+      preLoaderRoute: typeof AdminSalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/items': {
       id: '/admin/items'
       path: '/admin/items'
@@ -326,6 +366,8 @@ const rootRouteChildren: RootRouteChildren = {
   SignupSuccessRoute: SignupSuccessRoute,
   AccountSettingsRoute: AccountSettingsRoute,
   AdminItemsRoute: AdminItemsRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminSalesRoute: AdminSalesRoute,
   AdminStatsRoute: AdminStatsRoute,
   CategoryCategoryRoute: CategoryCategoryRoute,
   ProductIdRoute: ProductIdRoute,

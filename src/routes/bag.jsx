@@ -2,12 +2,15 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2, ShieldCheck, Truck } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageShell from "@/components/PageShell";
 import SouqBag from "@/components/SouqBag";
 import { useBag, updateBagItem, removeFromBag, clearBag } from "@/lib/store";
 import { findProductById } from "@/lib/products";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/bag")({
   component: BagPage,
@@ -34,6 +37,7 @@ function GeometricBorder() {
 }
 
 function BagPage() {
+  const { user } = useAuth();
   const bag = useBag();
   const lines = bag
     .map((i) => ({ ...i, product: findProductById(i.id) }))
@@ -44,6 +48,7 @@ function BagPage() {
   const total = subtotal + shipping;
 
   const [stage, setStage] = useState("bag"); // "bag" | "checkout" | "confirmed"
+  const [placing, setPlacing] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -53,8 +58,49 @@ function BagPage() {
     zip: "",
   });
 
-  const onPlaceOrder = (e) => {
+  const onPlaceOrder = async (e) => {
     e.preventDefault();
+    if (!user) {
+      toast.error("Please sign in to place an order.");
+      return;
+    }
+    setPlacing(true);
+    const { data: order, error } = await supabase
+      .from("orders")
+      .insert({
+        user_id: user.id,
+        full_name: form.name,
+        email: form.email,
+        address: form.address,
+        city: form.city,
+        country: form.country,
+        postal_code: form.zip || null,
+        subtotal,
+        shipping,
+        total,
+        status: "pending",
+      })
+      .select("id")
+      .single();
+    if (error || !order) {
+      setPlacing(false);
+      toast.error(error?.message || "Couldn't place order.");
+      return;
+    }
+    const items = lines.map((l) => ({
+      order_id: order.id,
+      product_id: String(l.id),
+      product_name: l.product.name,
+      size: l.size || null,
+      qty: l.qty,
+      unit_price: l.product.price,
+    }));
+    const { error: itemsErr } = await supabase.from("order_items").insert(items);
+    setPlacing(false);
+    if (itemsErr) {
+      toast.error(itemsErr.message);
+      return;
+    }
     setStage("confirmed");
     clearBag();
   };
@@ -221,9 +267,10 @@ function BagPage() {
                     </button>
                     <button
                       type="submit"
-                      className="btn-gold flex-1 py-3.5 text-xs uppercase tracking-widest font-semibold"
+                      disabled={placing}
+                      className="btn-gold flex-1 py-3.5 text-xs uppercase tracking-widest font-semibold disabled:opacity-60"
                     >
-                      Place order · € {total.toLocaleString()}
+                      {placing ? "Placing…" : `Place order · € ${total.toLocaleString()}`}
                     </button>
                   </div>
                 </form>
