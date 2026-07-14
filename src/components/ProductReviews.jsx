@@ -52,26 +52,39 @@ export default function ProductReviews({ productId, onClose }) {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("product_reviews")
-      .select("id, user_id, rating, title, body, created_at")
-      .eq("product_id", productId)
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.rpc("get_product_reviews", {
+      _product_id: productId,
+    });
+    let list = data ?? [];
     if (error) {
       console.error(error);
       toast.error("Couldn't load reviews.");
-    } else {
-      const list = data ?? [];
-      setRows(list);
-      const count = list.length;
-      const avgVal = count
-        ? Math.round((list.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10
-        : 0;
-      try {
-        await setProductRating(productId, { rating: avgVal, reviews: count });
-      } catch (e) {
-        // Non-fatal: built-in (non-DB) products won't have a row to update.
-      }
+      list = [];
+    }
+    let ownReview = null;
+    if (user) {
+      const { data: own } = await supabase
+        .from("product_reviews")
+        .select("id, user_id, rating, title, body, created_at")
+        .eq("product_id", productId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      ownReview = own ?? null;
+    }
+    const merged = list.map((r) =>
+      ownReview && r.id === ownReview.id
+        ? { ...r, user_id: ownReview.user_id }
+        : { ...r, user_id: null }
+    );
+    setRows(merged);
+    const count = list.length;
+    const avgVal = count
+      ? Math.round((list.reduce((s, r) => s + r.rating, 0) / count) * 10) / 10
+      : 0;
+    try {
+      await setProductRating(productId, { rating: avgVal, reviews: count });
+    } catch (e) {
+      // Non-fatal: built-in (non-DB) products won't have a row to update.
     }
     setLoading(false);
   };
