@@ -389,6 +389,17 @@ export type Database = {
         Args: { _username: string }
         Returns: boolean
       }
+      get_product_reviews: {
+        Args: { _product_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+          title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
