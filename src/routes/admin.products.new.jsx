@@ -75,6 +75,8 @@ function AddProductPage() {
   );
   const [price, setPrice] = useState("");
   const [tag, setTag] = useState("");
+  const [inStock, setInStock] = useState(true);
+  const [stockCount, setStockCount] = useState("10");
   const [style, setStyle] = useState(filterOptions.Style[0]);
   const [material, setMaterial] = useState(filterOptions.Material[0]);
   const [description, setDescription] = useState("");
