@@ -364,25 +364,64 @@ function DeckCarousel({ items }) {
           const baseRot = pos * -1.2;
           let transform = `translate(-50%, calc(-50% + ${baseY}px)) scale(${baseScale}) rotate(${baseRot}deg)`;
           let opacity = 1 - pos * 0.08;
+          let transition = "transform 520ms cubic-bezier(0.65,0,0.35,1), opacity 520ms ease";
           if (fly === "next") {
             transform = `translate(calc(-50% + 130%), -50%) scale(0.9) rotate(18deg)`;
             opacity = 0;
           } else if (fly === "prev") {
             transform = `translate(calc(-50% - 130%), -50%) scale(0.9) rotate(-18deg)`;
             opacity = 0;
+          } else if (isTop && drag.active) {
+            const rot = drag.x / 20;
+            transform = `translate(calc(-50% + ${drag.x}px), calc(-50% + ${drag.y}px)) rotate(${rot}deg)`;
+            opacity = Math.max(0.4, 1 - Math.abs(drag.x) / 400);
+            transition = "none";
           }
+          const onTouchStart = isTop ? (e) => {
+            const t = e.touches[0];
+            touchStart.current = { x: t.clientX, y: t.clientY, moved: false };
+            setDrag({ x: 0, y: 0, active: true });
+          } : undefined;
+          const onTouchMove = isTop ? (e) => {
+            if (!touchStart.current) return;
+            const t = e.touches[0];
+            const dx = t.clientX - touchStart.current.x;
+            const dy = t.clientY - touchStart.current.y;
+            if (Math.abs(dx) > 6 || Math.abs(dy) > 6) touchStart.current.moved = true;
+            setDrag({ x: dx, y: dy, active: true });
+          } : undefined;
+          const onTouchEnd = isTop ? (e) => {
+            const moved = touchStart.current?.moved;
+            const dx = drag.x;
+            setDrag({ x: 0, y: 0, active: false });
+            touchStart.current = null;
+            if (moved) {
+              e.preventDefault();
+              if (dx < -60) next();
+              else if (dx > 60) prev();
+            }
+          } : undefined;
+          const onClickCapture = isTop ? (e) => {
+            if (touchStart.current?.moved || Math.abs(drag.x) > 6) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          } : undefined;
           return (
             <Link
               key={item.id}
               to="/product/$id"
               params={{ id: item.id }}
-              className="absolute top-1/2 left-1/2 w-[72%] sm:w-[68%] lg:w-[64%] aspect-[3/4] rounded-2xl overflow-hidden bg-card"
+              className="absolute top-1/2 left-1/2 w-[72%] sm:w-[68%] lg:w-[64%] aspect-[3/4] rounded-2xl overflow-hidden bg-card touch-pan-y"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onClickCapture={onClickCapture}
               style={{
                 transform,
                 opacity,
                 zIndex: 50 - pos,
-                transition:
-                  "transform 520ms cubic-bezier(0.65,0,0.35,1), opacity 520ms ease",
+                transition,
                 boxShadow:
                   "0 20px 48px -16px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.05)",
                 pointerEvents: isTop ? "auto" : "none",
