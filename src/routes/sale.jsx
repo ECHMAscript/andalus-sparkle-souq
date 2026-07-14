@@ -319,6 +319,14 @@ function DeckCarousel({ items }) {
   if (deck.length === 0) return null;
 
   const VISIBLE = Math.min(5, deck.length);
+  const swipeIntent = drag.active && Math.abs(drag.x) > 4
+    ? drag.x > 0
+      ? "next"
+      : "prev"
+    : animating;
+  const visibleOrder = swipeIntent === "prev" && order.length > 1
+    ? [order[0], order[order.length - 1], ...order.slice(1, -1)].slice(0, VISIBLE)
+    : order.slice(0, VISIBLE);
 
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
@@ -355,7 +363,7 @@ function DeckCarousel({ items }) {
         style={{ perspective: "1200px" }}
       >
 
-        {order.slice(0, VISIBLE).map((idx, pos) => {
+        {visibleOrder.map((idx, pos) => {
           const item = deck[idx];
           const isTop = pos === 0;
           const fly = isTop && animating;
@@ -382,7 +390,7 @@ function DeckCarousel({ items }) {
           }
           const onTouchStart = isTop ? (e) => {
             const t = e.touches[0];
-            touchStart.current = { x: t.clientX, y: t.clientY, moved: false };
+            touchStart.current = { x: t.clientX, y: t.clientY, dx: 0, dy: 0, moved: false };
             setDrag({ x: 0, y: 0, active: true });
           } : undefined;
           const onTouchMove = isTop ? (e) => {
@@ -390,18 +398,20 @@ function DeckCarousel({ items }) {
             const t = e.touches[0];
             const dx = t.clientX - touchStart.current.x;
             const dy = t.clientY - touchStart.current.y;
+            touchStart.current.dx = dx;
+            touchStart.current.dy = dy;
             if (Math.abs(dx) > 6 || Math.abs(dy) > 6) touchStart.current.moved = true;
             setDrag({ x: dx, y: dy, active: true });
           } : undefined;
           const onTouchEnd = isTop ? (e) => {
             const moved = touchStart.current?.moved;
-            const dx = drag.x;
+            const dx = touchStart.current?.dx ?? drag.x;
             setDrag({ x: 0, y: 0, active: false });
             touchStart.current = null;
             if (moved) {
               e.preventDefault();
-              if (dx < -60) next();
-              else if (dx > 60) prev();
+              if (dx > 60) next();
+              else if (dx < -60) prev();
             }
           } : undefined;
           const onClickCapture = isTop ? (e) => {
