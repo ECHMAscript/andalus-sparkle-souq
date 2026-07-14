@@ -319,6 +319,14 @@ function DeckCarousel({ items }) {
   if (deck.length === 0) return null;
 
   const VISIBLE = Math.min(5, deck.length);
+  const swipeIntent = drag.active && Math.abs(drag.x) > 4
+    ? drag.x > 0
+      ? "next"
+      : "prev"
+    : animating;
+  const visibleOrder = swipeIntent === "prev" && order.length > 1
+    ? [order[0], order[order.length - 1], ...order.slice(1, -1)].slice(0, VISIBLE)
+    : order.slice(0, VISIBLE);
 
   return (
     <section className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
@@ -355,7 +363,7 @@ function DeckCarousel({ items }) {
         style={{ perspective: "1200px" }}
       >
 
-        {order.slice(0, VISIBLE).map((idx, pos) => {
+        {visibleOrder.map((idx, pos) => {
           const item = deck[idx];
           const isTop = pos === 0;
           const fly = isTop && animating;
@@ -400,8 +408,8 @@ function DeckCarousel({ items }) {
             touchStart.current = null;
             if (moved) {
               e.preventDefault();
-              if (dx < -60) next();
-              else if (dx > 60) prev();
+              if (dx > 60) next();
+              else if (dx < -60) prev();
             }
           } : undefined;
           const onClickCapture = isTop ? (e) => {
