@@ -173,22 +173,27 @@ function SettingsPage() {
     setEmail(s.email || "");
     setMethod(s.method || "card");
     setCardName(s.cardName || "");
-    setCardNumber(s.cardNumber || "");
-    setCardExp(s.cardExp || "");
-    setCardCvc(s.cardCvc || "");
+    // Never restore PAN/CVC/expiry from storage — only last4 is kept.
+    setCardNumber(s.cardLast4 ? `•••• •••• •••• ${s.cardLast4}` : "");
+    setCardExp("");
+    setCardCvc("");
     setPaypalEmail(s.paypalEmail || "");
   }, []);
 
   const onSave = (e) => {
     e.preventDefault();
+    // PCI: never persist full PAN, CVC, or expiry in the browser.
+    const digits = (cardNumber || "").replace(/\D/g, "");
+    const cardLast4 = digits.length >= 4 ? digits.slice(-4) : "";
     const data = {
       country, city, address, postal, name, email,
-      method, cardName, cardNumber, cardExp, cardCvc, paypalEmail,
+      method, cardName, cardLast4, paypalEmail,
     };
     try { window.localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 2200);
   };
+
 
   return (
     <PageShell>
