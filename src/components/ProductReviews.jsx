@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { setProductRating } from "@/lib/custom-products";
+import { getProductReviews } from "@/lib/reviews.functions";
 
 function Stars({ value, size = "size-4" }) {
   return (
@@ -52,11 +53,11 @@ export default function ProductReviews({ productId, onClose }) {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("get_product_reviews", {
-      _product_id: productId,
-    });
-    let list = data ?? [];
-    if (error) {
+    let list = [];
+    try {
+      const res = await getProductReviews({ data: { productId } });
+      list = res?.reviews ?? [];
+    } catch (error) {
       console.error(error);
       toast.error("Couldn't load reviews.");
       list = [];
