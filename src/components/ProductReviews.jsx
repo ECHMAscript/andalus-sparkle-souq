@@ -53,11 +53,11 @@ export default function ProductReviews({ productId, onClose }) {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.rpc("get_product_reviews", {
-      _product_id: productId,
-    });
-    let list = data ?? [];
-    if (error) {
+    let list = [];
+    try {
+      const res = await getProductReviews({ data: { productId } });
+      list = res?.reviews ?? [];
+    } catch (error) {
       console.error(error);
       toast.error("Couldn't load reviews.");
       list = [];
