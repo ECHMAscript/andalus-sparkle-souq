@@ -34,9 +34,20 @@ const STORE_KEY = "souq:settings";
 function loadSettings() {
   if (typeof window === "undefined") return null;
   try {
-    return JSON.parse(window.localStorage.getItem(STORE_KEY) || "null");
+    const raw = JSON.parse(window.localStorage.getItem(STORE_KEY) || "null");
+    if (raw && (raw.cardNumber || raw.cardCvc || raw.cardExp)) {
+      // Migrate: remove any previously-stored sensitive card data.
+      const digits = String(raw.cardNumber || "").replace(/\D/g, "");
+      const cardLast4 = digits.length >= 4 ? digits.slice(-4) : (raw.cardLast4 || "");
+      const { cardNumber: _n, cardCvc: _c, cardExp: _e, ...rest } = raw;
+      const cleaned = { ...rest, cardLast4 };
+      try { window.localStorage.setItem(STORE_KEY, JSON.stringify(cleaned)); } catch {}
+      return cleaned;
+    }
+    return raw;
   } catch { return null; }
 }
+
 
 function CountryDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false);
@@ -173,22 +184,27 @@ function SettingsPage() {
     setEmail(s.email || "");
     setMethod(s.method || "card");
     setCardName(s.cardName || "");
-    setCardNumber(s.cardNumber || "");
-    setCardExp(s.cardExp || "");
-    setCardCvc(s.cardCvc || "");
+    // Never restore PAN/CVC/expiry from storage — only last4 is kept.
+    setCardNumber(s.cardLast4 ? `•••• •••• •••• ${s.cardLast4}` : "");
+    setCardExp("");
+    setCardCvc("");
     setPaypalEmail(s.paypalEmail || "");
   }, []);
 
   const onSave = (e) => {
     e.preventDefault();
+    // PCI: never persist full PAN, CVC, or expiry in the browser.
+    const digits = (cardNumber || "").replace(/\D/g, "");
+    const cardLast4 = digits.length >= 4 ? digits.slice(-4) : "";
     const data = {
       country, city, address, postal, name, email,
-      method, cardName, cardNumber, cardExp, cardCvc, paypalEmail,
+      method, cardName, cardLast4, paypalEmail,
     };
     try { window.localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 2200);
   };
+
 
   return (
     <PageShell>
