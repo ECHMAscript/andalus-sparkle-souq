@@ -49,8 +49,9 @@ function BagPage() {
   const shipping = subtotal === 0 ? 0 : subtotal >= 500 ? 0 : 35;
   const total = subtotal + shipping;
 
-  const [stage, setStage] = useState("bag"); // "bag" | "checkout" | "confirmed"
+  const [stage, setStage] = useState("bag"); // "bag" | "checkout" | "pay"
   const [placing, setPlacing] = useState(false);
+  const [activeOrderId, setActiveOrderId] = useState(null);
   const [form, setForm] = useState({
     name: "",
     email: "",
