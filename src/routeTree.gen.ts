@@ -18,6 +18,7 @@ import { Route as BagRouteImport } from './routes/bag'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CategoryCategoryRouteImport } from './routes/category.$category'
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminSalesRouteImport } from './routes/admin.sales'
@@ -27,6 +28,7 @@ import { Route as AccountSettingsRouteImport } from './routes/account.settings'
 import { Route as AdminProductsIndexRouteImport } from './routes/admin.products.index'
 import { Route as AdminProductsNewRouteImport } from './routes/admin.products.new'
 import { Route as AdminProductsIdRouteImport } from './routes/admin.products.$id'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const SignupSuccessRoute = SignupSuccessRouteImport.update({
   id: '/signup-success',
@@ -71,6 +73,11 @@ const IndexRoute = IndexRouteImport.update({
 const ProductIdRoute = ProductIdRouteImport.update({
   id: '/product/$id',
   path: '/product/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutReturnRoute = CheckoutReturnRouteImport.update({
+  id: '/checkout/return',
+  path: '/checkout/return',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoryCategoryRoute = CategoryCategoryRouteImport.update({
@@ -118,6 +125,12 @@ const AdminProductsIdRoute = AdminProductsIdRouteImport.update({
   path: '/admin/products/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -134,10 +147,12 @@ export interface FileRoutesByFullPath {
   '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products/': typeof AdminProductsIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -154,10 +169,12 @@ export interface FileRoutesByTo {
   '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products': typeof AdminProductsIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -175,10 +192,12 @@ export interface FileRoutesById {
   '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
   '/category/$category': typeof CategoryCategoryRoute
+  '/checkout/return': typeof CheckoutReturnRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/products/$id': typeof AdminProductsIdRoute
   '/admin/products/new': typeof AdminProductsNewRoute
   '/admin/products/': typeof AdminProductsIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -197,10 +216,12 @@ export interface FileRouteTypes {
     | '/admin/sales'
     | '/admin/stats'
     | '/category/$category'
+    | '/checkout/return'
     | '/product/$id'
     | '/admin/products/$id'
     | '/admin/products/new'
     | '/admin/products/'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -217,10 +238,12 @@ export interface FileRouteTypes {
     | '/admin/sales'
     | '/admin/stats'
     | '/category/$category'
+    | '/checkout/return'
     | '/product/$id'
     | '/admin/products/$id'
     | '/admin/products/new'
     | '/admin/products'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -237,10 +260,12 @@ export interface FileRouteTypes {
     | '/admin/sales'
     | '/admin/stats'
     | '/category/$category'
+    | '/checkout/return'
     | '/product/$id'
     | '/admin/products/$id'
     | '/admin/products/new'
     | '/admin/products/'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -258,10 +283,12 @@ export interface RootRouteChildren {
   AdminSalesRoute: typeof AdminSalesRoute
   AdminStatsRoute: typeof AdminStatsRoute
   CategoryCategoryRoute: typeof CategoryCategoryRoute
+  CheckoutReturnRoute: typeof CheckoutReturnRoute
   ProductIdRoute: typeof ProductIdRoute
   AdminProductsIdRoute: typeof AdminProductsIdRoute
   AdminProductsNewRoute: typeof AdminProductsNewRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -329,6 +356,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/return': {
+      id: '/checkout/return'
+      path: '/checkout/return'
+      fullPath: '/checkout/return'
+      preLoaderRoute: typeof CheckoutReturnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/category/$category': {
       id: '/category/$category'
       path: '/category/$category'
@@ -392,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProductsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -410,21 +451,13 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSalesRoute: AdminSalesRoute,
   AdminStatsRoute: AdminStatsRoute,
   CategoryCategoryRoute: CategoryCategoryRoute,
+  CheckoutReturnRoute: CheckoutReturnRoute,
   ProductIdRoute: ProductIdRoute,
   AdminProductsIdRoute: AdminProductsIdRoute,
   AdminProductsNewRoute: AdminProductsNewRoute,
   AdminProductsIndexRoute: AdminProductsIndexRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

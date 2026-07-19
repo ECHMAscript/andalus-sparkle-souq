@@ -89,11 +89,16 @@ export type Database = {
           country: string
           created_at: string
           email: string
+          environment: string
           full_name: string
           id: string
+          paid_at: string | null
+          payment_status: string
           postal_code: string | null
           shipping: number
           status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
           subtotal: number
           total: number
           updated_at: string
@@ -105,11 +110,16 @@ export type Database = {
           country: string
           created_at?: string
           email: string
+          environment?: string
           full_name: string
           id?: string
+          paid_at?: string | null
+          payment_status?: string
           postal_code?: string | null
           shipping?: number
           status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           subtotal?: number
           total?: number
           updated_at?: string
@@ -121,11 +131,16 @@ export type Database = {
           country?: string
           created_at?: string
           email?: string
+          environment?: string
           full_name?: string
           id?: string
+          paid_at?: string | null
+          payment_status?: string
           postal_code?: string | null
           shipping?: number
           status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
           subtotal?: number
           total?: number
           updated_at?: string
