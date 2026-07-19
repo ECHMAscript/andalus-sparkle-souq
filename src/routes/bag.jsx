@@ -119,8 +119,8 @@ function BagPage() {
         </div>
 
         <h1 className="font-display text-4xl sm:text-5xl mb-2">
-          {stage === "confirmed" ? (
-            <>Shukran <span className="italic text-gold-gradient">~</span></>
+          {stage === "pay" ? (
+            <>Secure <span className="italic text-gold-gradient">Payment</span></>
           ) : stage === "checkout" ? (
             <>Andalusi <span className="italic text-gold-gradient">Checkout</span></>
           ) : (
@@ -129,25 +129,28 @@ function BagPage() {
         </h1>
         <GeometricBorder />
 
-        {/* CONFIRMED */}
-        {stage === "confirmed" && (
-          <div className="neo mt-10 p-10 sm:p-16 text-center max-w-2xl mx-auto">
-            <div className="neo-inset size-16 rounded-full grid place-items-center mx-auto mb-5">
-              <SouqBag className="size-7 text-primary" />
+        {/* PAYMENT */}
+        {stage === "pay" && activeOrderId && (
+          <div className="mt-8 max-w-3xl mx-auto">
+            <PaymentTestModeBanner />
+            <div className="neo mt-4 p-4 sm:p-6">
+              <StripeEmbeddedCheckoutWidget
+                orderId={activeOrderId}
+                returnUrl={`${window.location.origin}/checkout/return?order_id=${activeOrderId}`}
+              />
             </div>
-            <h2 className="font-display text-3xl mb-3">Your order is on its way</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              A confirmation has been sent to <span className="text-foreground">{form.email || "your inbox"}</span>.
-              Each piece is hand-checked at our atelier before it ships.
-            </p>
-            <Link to="/" className="btn-gold inline-block px-6 py-3 text-xs uppercase tracking-widest font-semibold">
-              Continue browsing
-            </Link>
+            <button
+              type="button"
+              onClick={() => setStage("checkout")}
+              className="neo-pressable mt-4 px-6 py-3 text-xs uppercase tracking-widest font-semibold"
+            >
+              ← Back
+            </button>
           </div>
         )}
 
         {/* EMPTY */}
-        {stage !== "confirmed" && lines.length === 0 && (
+        {stage !== "pay" && lines.length === 0 && (
           <div className="neo mt-10 p-10 sm:p-16 text-center max-w-xl mx-auto">
             <div className="neo-inset size-16 rounded-full grid place-items-center mx-auto mb-5">
               <SouqBag className="size-7 text-muted-foreground" />
