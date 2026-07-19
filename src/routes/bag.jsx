@@ -166,7 +166,7 @@ function BagPage() {
         )}
 
         {/* BAG / CHECKOUT */}
-        {stage !== "confirmed" && lines.length > 0 && (
+        {stage !== "pay" && lines.length > 0 && (
           <div className="grid lg:grid-cols-[1fr_380px] gap-8 mt-8">
             <div className="space-y-4">
               {stage === "bag" &&
