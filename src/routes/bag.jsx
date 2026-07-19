@@ -104,8 +104,8 @@ function BagPage() {
       toast.error(itemsErr.message);
       return;
     }
-    setStage("confirmed");
-    clearBag();
+    setActiveOrderId(order.id);
+    setStage("pay");
   };
 
   return (
