@@ -37,7 +37,14 @@ async function markOrderPaid(session: any, env: StripeEnv) {
     })
     .eq("id", orderId);
 
-  if (error) console.error("Webhook: failed to mark order paid", orderId, error.message);
+  if (error) {
+    console.error("Webhook: failed to mark order paid", orderId, error.message);
+    return;
+  }
+
+  // Decrement stock + clear the buyer's server-side cart atomically.
+  const { error: rpcError } = await getSupabase().rpc("apply_paid_order", { _order_id: orderId });
+  if (rpcError) console.error("Webhook: apply_paid_order failed", orderId, rpcError.message);
 }
 
 async function markOrderFailed(session: any) {
