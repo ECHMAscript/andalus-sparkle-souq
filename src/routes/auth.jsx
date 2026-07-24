@@ -251,6 +251,23 @@ function AuthPage() {
                       onChange={(e) => setLogin({ ...login, password: e.target.value })}
                       placeholder="••••••••" />
                   </Field>
+                  <div className="flex justify-end -mt-2">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const email = (login.email || "").trim();
+                        if (!email) { toast.error("Enter your email above first."); return; }
+                        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                          redirectTo: `${window.location.origin}/auth/reset`,
+                        });
+                        if (error) toast.error(error.message);
+                        else toast.success("Password reset email sent. Check your inbox.");
+                      }}
+                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                   <button type="submit" disabled={submitting}
                     className="neo-pressable w-full py-3 rounded-2xl font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-60"
                     style={{ background: "linear-gradient(135deg, oklch(0.55 0.14 75), oklch(0.45 0.12 65))", color: "white" }}>

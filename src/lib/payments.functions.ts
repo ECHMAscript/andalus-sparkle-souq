@@ -41,10 +41,26 @@ export const createOrderCheckoutSession = createServerFn({ method: "POST" })
 
       const { data: items, error: itemsErr } = await supabase
         .from("order_items")
-        .select("product_name, size, qty, unit_price")
+        .select("product_id, product_name, size, qty, unit_price")
         .eq("order_id", order.id);
       if (itemsErr) throw new Error(itemsErr.message);
       if (!items?.length) throw new Error("Order has no items");
+
+      // Stock guard: for any item that exists in the DB catalog, ensure enough stock.
+      const productIds = items.map((i) => i.product_id);
+      const { data: stockRows } = await supabase
+        .from("products")
+        .select("id, name, stock")
+        .in("id", productIds);
+      const stockMap = new Map((stockRows ?? []).map((r) => [r.id, r]));
+      for (const it of items) {
+        const row = stockMap.get(it.product_id);
+        if (row && row.stock < it.qty) {
+          throw new Error(
+            `Sorry — "${row.name}" only has ${row.stock} left in stock.`,
+          );
+        }
+      }
 
       const stripe = createStripeClient(data.environment);
 

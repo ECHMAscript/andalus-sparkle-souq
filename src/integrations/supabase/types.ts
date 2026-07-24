@@ -399,6 +399,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_paid_order: { Args: { _order_id: string }; Returns: undefined }
       check_email_available: { Args: { _email: string }; Returns: boolean }
       check_username_available: {
         Args: { _username: string }

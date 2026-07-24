@@ -384,8 +384,81 @@ function SettingsPage() {
             </div>
           </div>
         </form>
+
+        <DangerZone />
       </main>
       <Footer />
     </PageShell>
   );
 }
+
+function DangerZone() {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  async function confirmDelete() {
+    setBusy(true);
+    try {
+      const { deleteMyAccount } = await import("@/lib/account.functions");
+      const { supabase } = await import("@/integrations/supabase/client");
+      const res = await deleteMyAccount();
+      if ("error" in res) {
+        setBusy(false);
+        setOpen(false);
+        const { toast } = await import("sonner");
+        toast.error(res.error);
+        return;
+      }
+      await supabase.auth.signOut();
+      try { window.localStorage.clear(); } catch {}
+      window.location.href = "/";
+    } catch (e) {
+      setBusy(false);
+      const { toast } = await import("sonner");
+      toast.error(e?.message ?? "Failed to delete account");
+    }
+  }
+  return (
+    <section className="mt-10 neo p-6 sm:p-8 border border-destructive/30">
+      <h2 className="font-display text-2xl mb-1 text-destructive">Danger zone</h2>
+      <p className="text-xs text-muted-foreground mb-4">
+        Permanently delete your account, orders, favorites and cart. This cannot be undone.
+      </p>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="neo-pressable px-6 py-3 text-xs uppercase tracking-widest font-semibold text-destructive"
+      >
+        Delete my account
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
+          <div className="neo max-w-md w-full p-6">
+            <h3 className="font-display text-xl mb-2">Are you absolutely sure?</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              This permanently removes your account and all data associated with it.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setOpen(false)}
+                className="neo-pressable px-4 py-2 text-xs uppercase tracking-widest"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={confirmDelete}
+                className="px-4 py-2 text-xs uppercase tracking-widest font-semibold rounded-xl bg-destructive text-destructive-foreground disabled:opacity-60"
+              >
+                {busy ? "Deleting…" : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
