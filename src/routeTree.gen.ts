@@ -20,6 +20,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as CheckoutReturnRouteImport } from './routes/checkout.return'
 import { Route as CategoryCategoryRouteImport } from './routes/category.$category'
+import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AdminStatsRouteImport } from './routes/admin.stats'
 import { Route as AdminSalesRouteImport } from './routes/admin.sales'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
@@ -85,6 +86,11 @@ const CategoryCategoryRoute = CategoryCategoryRouteImport.update({
   path: '/category/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthResetRoute = AuthResetRouteImport.update({
+  id: '/reset',
+  path: '/reset',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AdminStatsRoute = AdminStatsRouteImport.update({
   id: '/admin/stats',
   path: '/admin/stats',
@@ -134,7 +140,7 @@ const ApiPublicPaymentsWebhookRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/bag': typeof BagRoute
   '/contact': typeof ContactRoute
   '/crafting': typeof CraftingRoute
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/auth/reset': typeof AuthResetRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/product/$id': typeof ProductIdRoute
@@ -156,7 +163,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/bag': typeof BagRoute
   '/contact': typeof ContactRoute
   '/crafting': typeof CraftingRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/auth/reset': typeof AuthResetRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/product/$id': typeof ProductIdRoute
@@ -179,7 +187,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/bag': typeof BagRoute
   '/contact': typeof ContactRoute
   '/crafting': typeof CraftingRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/sales': typeof AdminSalesRoute
   '/admin/stats': typeof AdminStatsRoute
+  '/auth/reset': typeof AuthResetRoute
   '/category/$category': typeof CategoryCategoryRoute
   '/checkout/return': typeof CheckoutReturnRoute
   '/product/$id': typeof ProductIdRoute
@@ -215,6 +224,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/sales'
     | '/admin/stats'
+    | '/auth/reset'
     | '/category/$category'
     | '/checkout/return'
     | '/product/$id'
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/sales'
     | '/admin/stats'
+    | '/auth/reset'
     | '/category/$category'
     | '/checkout/return'
     | '/product/$id'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/sales'
     | '/admin/stats'
+    | '/auth/reset'
     | '/category/$category'
     | '/checkout/return'
     | '/product/$id'
@@ -270,7 +282,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   BagRoute: typeof BagRoute
   ContactRoute: typeof ContactRoute
   CraftingRoute: typeof CraftingRoute
@@ -370,6 +382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoryCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/reset': {
+      id: '/auth/reset'
+      path: '/reset'
+      fullPath: '/auth/reset'
+      preLoaderRoute: typeof AuthResetRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/admin/stats': {
       id: '/admin/stats'
       path: '/admin/stats'
@@ -436,9 +455,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthRouteChildren {
+  AuthResetRoute: typeof AuthResetRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthResetRoute: AuthResetRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   BagRoute: BagRoute,
   ContactRoute: ContactRoute,
   CraftingRoute: CraftingRoute,
