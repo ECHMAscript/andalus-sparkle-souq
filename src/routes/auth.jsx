@@ -142,10 +142,26 @@ function AuthPage() {
     setSubmitting(true);
     const { error } = await supabase.auth.signInWithPassword(parsed.data);
     setSubmitting(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      const msg = (error.message || "").toLowerCase();
+      if (msg.includes("invalid login credentials")) {
+        setErrors({
+          email: "We couldn't find an account with these details",
+          password: "Incorrect email or password. Please try again.",
+        });
+      } else if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+        setErrors({ email: "Please confirm your email before signing in. Check your inbox." });
+      } else if (msg.includes("rate") || msg.includes("too many")) {
+        setErrors({ password: "Too many attempts. Please wait a moment and try again." });
+      } else {
+        setErrors({ password: error.message });
+      }
+      return;
+    }
     toast.success("Welcome back");
     navigate({ to: "/account/settings" });
   }
+
 
   // Live validation state for signup
   const usernameAvail = useAvailability(mode === "signup" ? signup.username : "", "username", 5);
