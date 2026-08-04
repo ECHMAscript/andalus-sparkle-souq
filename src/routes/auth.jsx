@@ -254,19 +254,20 @@ function AuthPage() {
 
             <div className="neo rounded-3xl p-6 sm:p-8 bg-card">
               {mode === "login" ? (
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <Field icon={Mail} label="Email" error={errors.email}>
+                <form onSubmit={handleLogin} className="space-y-4" noValidate>
+                  <Field icon={Mail} label="Email" error={errors.email} status={errors.email ? "error" : "idle"}>
                     <input type="email" autoComplete="email" className={inputCls}
                       value={login.email}
-                      onChange={(e) => setLogin({ ...login, email: e.target.value })}
+                      onChange={(e) => { setErrors((p) => ({ ...p, email: undefined })); setLogin({ ...login, email: e.target.value }); }}
                       placeholder="you@example.com" />
                   </Field>
-                  <Field icon={Lock} label="Password" error={errors.password}>
+                  <Field icon={Lock} label="Password" error={errors.password} status={errors.password ? "error" : "idle"}>
                     <input type="password" autoComplete="current-password" className={inputCls}
                       value={login.password}
-                      onChange={(e) => setLogin({ ...login, password: e.target.value })}
+                      onChange={(e) => { setErrors((p) => ({ ...p, password: undefined })); setLogin({ ...login, password: e.target.value }); }}
                       placeholder="••••••••" />
                   </Field>
+
                   <div className="flex justify-end -mt-2">
                     <button
                       type="button"
